@@ -1,0 +1,18 @@
+MMOnsterpatch v0.17.1.7 PvPReplayNoDeadlockHotfix
+
+Purpose:
+- Fix remaining PvP between-turn lockup after v0.17.1.6 while preserving old authoritative hit replay.
+
+Changes:
+- Confirmed the v0.17.1.4 PlayerTurn token gate is not active in the battle prefix path.
+- Added source comments marking legacy token fields as inactive compatibility leftovers.
+- Restored bounded old-repo-style authoritative replay wait behavior: remote replay waits for BATTLE_HIT/BATTLE_DONE, applies exact received hits, but if DONE/hits stop arriving past the hit timeout it advances without fabricating random damage.
+- No random local enemy move fallback added.
+- No random damage fallback added.
+
+Preserved:
+- v0.17.1.1 Trading Post save-session hotfix.
+- v0.17.1.2 server-truth saves.
+- v0.17.1.3 save-select appearance metadata.
+- v0.17.1.6 old repo PvP flow rollback.
+- Client/Launcher/Server layout and clean build scripts.

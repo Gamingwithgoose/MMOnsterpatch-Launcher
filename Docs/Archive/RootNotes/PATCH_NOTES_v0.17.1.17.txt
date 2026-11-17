@@ -1,0 +1,16 @@
+MMOnsterpatch v0.17.1.17 DisconnectNoResultWatchdogAbort
+
+Focused follow-up to v0.17.1.16.
+
+Problem fixed:
+- Disconnect/no-result abort could fail to fire if the client was stuck in the server-owned GetNextBattler/no-grant path instead of inside NetworkEnemyTurn's remote command wait loop.
+- Result: player could sit in battle longer than BattleCommandTimeoutSeconds with no attacks and no battle end.
+
+Changes:
+- Added a broader server-owned PvP no-result watchdog at the GetNextBattler gate.
+- If the local client does not have a playable local grant, and no server-owned PvP progress occurs for BattleCommandTimeoutSeconds, the current PvP battle aborts with no result.
+- No-result abort still suppresses ranked result reporting and sends BATTLE_END with a no-result reason.
+- Abort now attempts BattleSystem.ExitBattle first and GameScript.ExitBattle as a fallback.
+
+Not changed:
+- No normal PvP action queue, turn-meter, actionSeq, damage, targeting, random-target, shield/faint visual, or repeat-battle reset changes.

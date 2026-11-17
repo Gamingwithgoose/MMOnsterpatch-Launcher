@@ -1,0 +1,24 @@
+v0.17.1.8.3 Rebuilt Old PvP Battle Payload
+
+Goal:
+- Ship the restored old PvP battle flow in the actual launcher/server payload DLLs, not just in source.
+
+Changed:
+- Removed the unused ranked/requester first-turn parameter from PvP battle startup.
+- Confirmed the old battle flow remains the source of truth:
+  - BattleSystem decides turn order from normal vanilla turn meters/speed.
+  - Local/player turns run vanilla.
+  - Enemy-side PvP turns use the old network replay path.
+  - No forced first turn.
+  - No local turn tokens.
+  - No auto-target SelectMove command helper.
+- Rebuilt MMOnsterpatchOfficialServerPatcher.dll from the restored source.
+- Copied the rebuilt DLL/PDB into:
+  - Launcher/MMOnsterpatchLauncher.Wpf/Payload/BepInEx/patchers
+  - Server/PatchPayload/files/BepInEx/patchers
+- Updated Server/PatchPayload/manifest.json hashes for the rebuilt DLL/PDB.
+
+Kept:
+- Ranked PvP request/accept/result wrapper.
+- Ranked WIN/LOSS reporting.
+- Server-side ranked RP distribution methods.

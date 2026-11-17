@@ -1,0 +1,21 @@
+MMOnsterpatch v0.17.1.23 NoTimeoutSpawnClaimCancelFix
+
+Focused follow-up to v0.17.1.22 based on idle/despawn/cancel test feedback.
+
+Client:
+- Removed local remote-player stale despawn behavior. Remote players/followers are no longer removed just because snapshots pause or the player/window is idle.
+- Removed local world-spawn time expiry. Server snapshots/removal packets/map changes remain authoritative; idle clients should not silently lose valid spawns.
+- Battle request targeting no longer rejects idle remotes by lastSeen. It uses latest server target position plus rendered transform and a native-grid one-tile-in-front tolerance.
+- Disabled distance-poll preclaim for server-owned world spawns. Claims now rely on the native GameScript.Interact postfix and exact curInteractingMonObj selected by vanilla interaction.
+- Fixed claim/snapshot interaction: if a claimed spawn is absent from WORLD_SPAWNS because the server marked it busy, the claimant's local object is not deleted while the vanilla catch/shoo/cancel menu is open.
+- Added cancel/close release: if the player opens the wild-mon menu then cancels/closes it without catch/shoo result, the client releases the server claim and restores the local spawn.
+
+Server:
+- Removed make_snapshot stale-player removal. Real socket disconnect still removes players; inactivity no longer pops players out of players_by_conn or clears map spawns.
+- PvP disconnect watchdog now treats only actual missing player state as disconnected, not last_seen age.
+- Server startup banner updated to v0.17.1.23-no-timeout-spawn-claim-cancel-fix.
+
+Untouched:
+- PvP action queue/actionSeq/damage/targeting/ranked RP logic.
+- Shield/faint visual sync.
+- MariaDB/account/launcher auth logic.

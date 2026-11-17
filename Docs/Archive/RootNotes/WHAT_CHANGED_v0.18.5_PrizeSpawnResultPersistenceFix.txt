@@ -1,0 +1,28 @@
+MMOnsterpatch v0.18.5 PrizeSpawnResultPersistenceFix
+
+Built from v0.18.4 PrizeCrystalOwnerCleanupFix.
+
+Focus:
+- Fix final prize/personal reward spawn lifecycle issue after opening prize crystal.
+- If the owner catches or shoos a prize mon, it must be permanently removed from the server-owned spawn table and not reappear after movement/relog.
+- If the owner cancels or fails a catch, the same spawn is released/available again.
+
+Server changes:
+- WORLD_SPAWN_RESULT now treats caught/remove/shoo/sent_to_town as permanent removal results.
+- Removed spawns are popped from world_spawns_by_id instead of being left as despawned records.
+- Owner-only personal/prize spawn removals do not schedule normal public world-spawn refill.
+- Failed/cancel-style results still release the spawn back to available.
+- Server banner updated to v0.18.5-prize-spawn-result-persistence-fix.
+
+Client changes:
+- Added SendToTown hook for server-owned wild/prize spawns so Shoo/Send-to-Town reports a permanent removed result instead of falling through as a failed/cancel result.
+- Added explicit removed result packet path for WORLD_SPAWN_RESULT.
+- Client treats WORLD_SPAWN_CATCH_END result=removed/shoo/sent_to_town as a removal.
+- Successful catch/shoo locally hard-disables and removes the exact server-owned spawn object.
+- Cancel/failed catch still releases the existing spawn and keeps it visible.
+
+Preserved:
+- v0.18.3 no-collider battle request fix.
+- v0.18.1/v0.18.0 spawn busy/cancel behavior and follower tint.
+- v0.17.1.23 idle/no-disconnect world-spawn fix.
+- PvP action queue/actionSeq/damage/targeting/ranked RP/disconnect abort untouched.

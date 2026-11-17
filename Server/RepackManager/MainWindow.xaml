@@ -1,0 +1,278 @@
+<Window x:Class="MMOnsterpatch.RepackManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MMOnsterpatch Repack Manager"
+        Width="1380"
+        Height="820"
+        MinWidth="1180"
+        MinHeight="720"
+        WindowStartupLocation="CenterScreen"
+        Background="#080B10"
+        FontFamily="Segoe UI"
+        Closing="MainWindow_Closing">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PanelBrush" Color="#D90A0F14" />
+        <SolidColorBrush x:Key="PanelBorderBrush" Color="#35404C" />
+        <SolidColorBrush x:Key="TextBrush" Color="#ECECEC" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#B8BCC3" />
+        <SolidColorBrush x:Key="PurpleAccentBrush" Color="#9A4DED" />
+        <SolidColorBrush x:Key="PurpleAccentLightBrush" Color="#DEC5FF" />
+        <SolidColorBrush x:Key="OnlineGreenBrush" Color="#2DE342" />
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="Background" Value="#4A247D" />
+            <Setter Property="BorderBrush" Value="#9A4DED" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="4" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Foreground" Value="#ECECEC" />
+            <Setter Property="Background" Value="#151B23" />
+            <Setter Property="BorderBrush" Value="#39434F" />
+            <Setter Property="CaretBrush" Value="#DEC5FF" />
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="#ECECEC" />
+            <Setter Property="Margin" Value="8,4,8,4" />
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="MMOnsterpatch Repack Manager" Foreground="{StaticResource PurpleAccentLightBrush}" FontSize="26" FontWeight="Bold"/>
+                <TextBlock Text="v0.18.4 Prize Crystal Owner Cleanup Fix" Foreground="{StaticResource MutedTextBrush}" FontSize="13"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
+                <CheckBox x:Name="AutoRestartCheckBox" Content="Auto restart all" IsChecked="{Binding AutoRestartAll}" />
+                <CheckBox x:Name="StartMinimizedCheckBox" Content="Start servers minimized" IsChecked="{Binding StartServersMinimized}" />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="210"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="390"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                <DockPanel LastChildFill="True">
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="Online Users" Foreground="{StaticResource PurpleAccentLightBrush}" FontSize="18" FontWeight="Bold"/>
+                        <TextBlock x:Name="OnlineUsersCountText" Text="0 online" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,3,0,10"/>
+                        <Button Content="Refresh Users" Height="30" Click="RefreshOnlineUsers_Click" />
+                    </StackPanel>
+                    <ListBox x:Name="OnlineUsersListBox" Margin="0,10,0,0" Background="#05070A" Foreground="#ECECEC" BorderBrush="#35404C" BorderThickness="1" />
+                </DockPanel>
+            </Border>
+
+            <TabControl Grid.Column="2" Background="#0A0F14" BorderBrush="#35404C">
+                <TabItem Header="Servers">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="320"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Steam Auth" FontWeight="Bold" FontSize="16"/>
+                                <TextBlock x:Name="AuthStatusText" Grid.Column="1" Text="Offline" Foreground="#B8BCC3" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Inside Official Server: HTTPS mon-auth → local 61527" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="AuthToggleButton" Content="Start Server" Width="112" Click="ToggleAuth_Click"/>
+                                    <Button Content="Restart" Width="75" Click="RestartAuth_Click"/>
+                                    <Button Content="Logs" Width="60" Click="OpenAuthLogs_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="320"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Official Server" FontWeight="Bold" FontSize="16"/>
+                                <TextBlock x:Name="WorldStatusText" Grid.Column="1" Text="Offline" Foreground="#B8BCC3" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Current Python server: MMO + Social + Trading Post + Steam auth" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="WorldToggleButton" Content="Start Server" Width="112" Click="ToggleWorld_Click"/>
+                                    <Button Content="Restart" Width="75" Click="RestartWorld_Click"/>
+                                    <Button Content="Logs" Width="60" Click="OpenWorldLogs_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="2" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="385"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Account Website" FontWeight="Bold" FontSize="16"/>
+                                <TextBlock x:Name="WebsiteStatusText" Grid.Column="1" Text="Offline" Foreground="#B8BCC3" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Local 8080 behind Cloudflare HTTPS tunnel" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="WebsiteToggleButton" Content="Start Website" Width="126" Click="ToggleWebsite_Click"/>
+                                    <Button Content="Restart" Width="75" Click="RestartWebsite_Click"/>
+                                    <Button Content="View" Width="60" Click="OpenWebsite_Click"/>
+                                    <Button Content="Logs" Width="60" Click="OpenWebsiteLogs_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="3" Background="#AF0A0F14" BorderBrush="#35404C" BorderThickness="1" CornerRadius="8" Padding="10">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Update / install workflow" Foreground="{StaticResource PurpleAccentLightBrush}" FontSize="16" FontWeight="Bold" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Patch Payload" Foreground="{StaticResource MutedTextBrush}" FontWeight="SemiBold" Margin="4,0,0,2"/>
+                                    <WrapPanel>
+                                        <Button Content="Open PatchPayload" Width="150" Click="OpenPatchPayload_Click"/>
+                                        <Button Content="Build Patch Manifest" Width="165" Click="BuildPatchManifestQuick_Click"/>
+                                        <Button Content="Open manifest.json" Width="150" Click="OpenManifest_Click"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="Game Update" Foreground="{StaticResource MutedTextBrush}" FontWeight="SemiBold" Margin="4,8,0,2"/>
+                                    <WrapPanel>
+                                        <Button Content="Load Game Update" Width="150" Click="LoadGameUpdate_Click"/>
+                                        <Button Content="Analyze Changes" Width="145" Click="AnalyzeGameUpdate_Click"/>
+                                        <Button Content="Apply Game Update" Width="150" Click="ApplyGameUpdate_Click"/>
+                                    </WrapPanel>
+                                    <TextBlock Text="Database / tools" Foreground="{StaticResource MutedTextBrush}" FontWeight="SemiBold" Margin="4,8,0,2"/>
+                                    <WrapPanel>
+                                        <Button Content="Install Database" Width="130" Click="InstallDatabase_Click"/>
+                                        <Button Content="Update Database" Width="130" Click="UpdateDatabase_Click"/>
+                                        <Button Content="Backup Database" Width="130" Click="BackupDatabase_Click"/>
+                                        <Button Content="Open HeidiSQL" Width="120" Click="OpenHeidiSql_Click"/>
+                                        <Button Content="Open Config" Width="110" Click="OpenConfig_Click"/>
+                                        <Button Content="Open Repack Root" Width="140" Click="OpenRepackRoot_Click"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Patch Manifest Builder">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Patch Version" VerticalAlignment="Center"/>
+                                <TextBox x:Name="PatchVersionTextBox" Grid.Column="1" Text="0.12.8"/>
+                                <TextBlock Grid.Column="2" Text="Game Build" VerticalAlignment="Center"/>
+                                <TextBox x:Name="RequiredGameBuildTextBox" Grid.Column="3" Text="0.182"/>
+                                <TextBlock Grid.Column="4" Text="Channel" VerticalAlignment="Center"/>
+                                <TextBox x:Name="ChannelTextBox" Grid.Column="5" Text="release"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="10" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="180"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Min Launcher" VerticalAlignment="Center"/>
+                                <TextBox x:Name="MinimumLauncherTextBox" Grid.Column="1" Text="0.12.8"/>
+                                <TextBlock Grid.Column="2" Text="Notes" VerticalAlignment="Center"/>
+                                <TextBox x:Name="PatchNotesTextBox" Grid.Column="3" Text="Account/status foundation patch payload update."/>
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Row="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <DataGrid x:Name="ManifestFilesGrid" AutoGenerateColumns="False" IsReadOnly="True" Background="#10151B" Foreground="#ECECEC" GridLinesVisibility="Horizontal">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Path" Binding="{Binding Path}" Width="*"/>
+                                    <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="120"/>
+                                    <DataGridTextColumn Header="Size" Binding="{Binding Size}" Width="90"/>
+                                    <DataGridTextColumn Header="SHA-256" Binding="{Binding Sha256}" Width="310"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <WrapPanel Grid.Row="1" Margin="0,10,0,0">
+                                <Button Content="Scan Payload Folder" Width="160" Click="ScanPayload_Click"/>
+                                <Button Content="Build Manifest" Width="135" Click="BuildManifest_Click"/>
+                                <Button Content="Backup Current Manifest" Width="170" Click="BackupManifest_Click"/>
+                                <Button Content="Open manifest.json" Width="150" Click="OpenManifest_Click"/>
+                            </WrapPanel>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+            <Border Grid.Column="4" Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                <DockPanel LastChildFill="True">
+                    <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Console / Events" Foreground="{StaticResource PurpleAccentLightBrush}" FontSize="18" FontWeight="Bold"/>
+                            <TextBlock Text="Manager + child process output" Foreground="{StaticResource MutedTextBrush}" FontSize="12"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Clear" Width="70" Click="ClearEvents_Click"/>
+                    </Grid>
+                    <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                        <TextBlock Text="Admin Command" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="4,0,0,2"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="AdminCommandTextBox" Grid.Column="0" Height="30" KeyDown="AdminCommandTextBox_KeyDown" ToolTip="Type /adminhelp, /givesats, or another Official Server admin command."/>
+                            <Button Grid.Column="1" Content="Send" Width="70" Click="SendAdminCommand_Click"/>
+                        </Grid>
+                    </StackPanel>
+                    <TextBox x:Name="LogTextBox" Height="Auto" MinHeight="420" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="#05070A" Foreground="#35E05C" BorderBrush="#35404C" BorderThickness="1" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" FontSize="12" Padding="8" AcceptsReturn="True" />
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

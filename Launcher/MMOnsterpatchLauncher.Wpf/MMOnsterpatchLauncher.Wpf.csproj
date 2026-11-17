@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\MMOnsterpatchLauncherIcon.ico</ApplicationIcon>
+    <AssemblyName>MMOnsterpatchLauncher</AssemblyName>
+    <RootNamespace>MMOnsterpatchLauncher.Wpf</RootNamespace>
+    <Version>0.18.4</Version>
+    <AssemblyVersion>0.18.4.0</AssemblyVersion>
+    <FileVersion>0.18.4.0</FileVersion>
+    <InformationalVersion>v0.18.4_PrizeCrystalOwnerCleanupFix</InformationalVersion>
+
+    <!-- Windows single-EXE release defaults. Visual Studio publish profile below uses the same settings. -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishTrimmed>false</PublishTrimmed>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Embed PNG artwork in the app so the publish output does not need an Assets folder. -->
+    <None Remove="Assets\*.png" />
+    <Resource Include="Assets\*.png" />
+
+    <!-- Use ICO for EXE icon only; do not copy it next to the EXE. -->
+    <None Include="Assets\MMOnsterpatchLauncherIcon.ico" CopyToOutputDirectory="Never" />
+
+    <!-- Embed the online staging payload so the launcher can remain a single EXE. -->
+    <None Remove="Payload\**\*" />
+    <Resource Include="Payload\**\*" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Monsterpatch_Followers_Runtime</AssemblyName>
+    <RootNamespace>Goose.Monsterpatch.FollowersRuntime</RootNamespace>
+    <AssemblyVersion>0.18.4.0</AssemblyVersion>
+    <FileVersion>0.18.4.0</FileVersion>
+    <LibDir>$(MSBuildProjectDirectory)\..\..\lib</LibDir>
+    <LibDir Condition="!Exists('$(LibDir)\Assembly-CSharp.dll')">$(MSBuildProjectDirectory)\..\..\..\lib</LibDir>
+    <LibDir Condition="!Exists('$(LibDir)\Assembly-CSharp.dll')">$(MSBuildProjectDirectory)\..\..\..\..\lib</LibDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BepInEx"><HintPath>$(LibDir)\BepInEx.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>$(LibDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(LibDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(LibDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.PhysicsModule"><HintPath>$(LibDir)\UnityEngine.PhysicsModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.Physics2DModule"><HintPath>$(LibDir)\UnityEngine.Physics2DModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(LibDir)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

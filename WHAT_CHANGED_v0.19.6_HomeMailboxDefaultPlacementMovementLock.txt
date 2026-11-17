@@ -1,0 +1,33 @@
+MMOnsterpatch v0.19.6 Home Mailbox default placement + movement lock
+
+Base:
+- MMOnsterpatch_Launcher_Avalonia_ClipboardCompileFix_v0.19.6_source(1).zip
+
+Scope:
+- Client-only source/payload change.
+- Server, database, mail commands, launcher staging/build flow, and Online Play flow are unchanged.
+- Continue building with the existing CLEAN_AND_BUILD_ALL.bat.
+
+Home mailbox changes:
+- Uses the confirmed My Town/player-house mailbox placement defaults:
+  UseParentHouseAnchor = true
+  AnchorOffsetX = -0.8
+  AnchorOffsetY = 0
+  TargetX = -4
+  TargetY = 24
+  TargetZ = 0
+  ReplaceRadius = 1
+  Scale = 1
+  PixelsPerUnit = 160
+  LogRadius = 2
+- Keeps the physical My Town mailbox as the access point for the existing mail system.
+- Trading Post remains marketplace-only; mail stays removed from the Trading Post top bar.
+- Mailbox opens the existing full mail UI: compose/send/read/claim/delete/save.
+
+Movement-lock change:
+- When the mailbox-only UI is open, the patcher holds GameScript.interacting=true so vanilla PlayerController movement is blocked like a menu/dialogue state.
+- Closing the mailbox with the X or Close button releases the mailbox movement lock and restores movement.
+- The lock is scoped to the mailbox-only UI, not the normal Trading Post window.
+
+Notes:
+- Existing BepInEx config files preserve old values. To see the new defaults on an already-tested install, delete or edit BepInEx/config/goose.monsterpatch.home_mailbox.cfg before launching the rebuilt client.

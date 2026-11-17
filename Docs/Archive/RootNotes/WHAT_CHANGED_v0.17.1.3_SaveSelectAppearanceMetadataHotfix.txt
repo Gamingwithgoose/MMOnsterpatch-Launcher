@@ -1,0 +1,15 @@
+MMOnsterpatch v0.17.1.5 Save Select Appearance Metadata Hotfix
+
+Baseline:
+- Built from v0.17.1.2 Save Pipeline Server Truth Hotfix.
+
+Fix:
+- Official Server save-slot metadata now includes playerDesign/playerColor1/playerColor2.
+- Online save select metadata-only placeholders apply those appearance fields so the small left save-slot character icon can show the real character appearance instead of a generic placeholder while payloads remain lazy-loaded/server-truth.
+- Full slot and slot-data responses also append appearance metadata for compatibility with non-lazy/full-load paths.
+- Local OnlineCache manifest updates include PVP profile fields and appearance metadata so fallback/preview cache stays consistent after a confirmed server save.
+
+Preserved:
+- Right-side preview player/icon layers under the MMOnsterpatch PVP/RP text remain hidden.
+- No Trading Post, ranked RP formula, hook/water spawn, or folder-layout changes.
+- Client/, Launcher/, Server/, CLEAN_AND_BUILD_ALL.bat, and Clean_And_Build_All.ps1 remain preserved.

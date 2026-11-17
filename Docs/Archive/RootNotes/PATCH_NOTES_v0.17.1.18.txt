@@ -1,0 +1,15 @@
+MMOnsterpatch v0.17.1.18 ServerDisconnectBattleAbortFix
+
+Purpose:
+- Fix PvP disconnect/no-result abort when the opponent disappears via server stale-timeout rather than clean socket disconnect.
+
+Changes:
+- Server timeout cleanup now calls the same battle-session cleanup/notify path as Handler.finish.
+- Active battle sessions involving the stale player are removed.
+- Remaining player is sent BATTLE_OPPONENT_LEFT so their client aborts the PvP battle with no result.
+
+Unchanged:
+- Normal PvP action queue / server turn meter / actionSeq.
+- Damage, targeting, random target order.
+- Shield/faint visual sync.
+- Ranked win/loss reporting for completed matches.

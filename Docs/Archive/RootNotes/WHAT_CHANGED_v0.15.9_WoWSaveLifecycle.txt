@@ -1,0 +1,55 @@
+MMOnsterpatch YOLO v0.15.9 WoW Save Lifecycle / MariaDB Stability
+==================================================================
+
+Baseline
+--------
+Started from:
+  MMOnsterpatch_YOLO_v0.15.8_PerfStability_BuildWorkspace_fixed5_mariadb_burst_perf.zip
+
+This is a source/build workspace package. I did not build it here. The existing
+CLEAN_AND_BUILD_ALL.bat and BUILD_MARIADB_NATIVE_OFFICIAL_AND_COPY_SERVER.bat are left in place.
+
+What changed
+------------
+1. MariaDB bootstrap overhead reduced
+   - Server/OfficialServer/server_modules/mmonsterpatch_db.py now caches CREATE DATABASE completion per logical database.
+   - This stops every short-lived social/save/trading connection from opening a server-level connection and running CREATE DATABASE IF NOT EXISTS first.
+
+2. Official online save schema checks are startup-style instead of per-request
+   - Server/OfficialServer/server_modules/mmonsterpatch_social_core.py now caches official_online_saves schema setup once per server process.
+   - Normal save slot reads/writes no longer repeatedly run CREATE TABLE / CREATE INDEX / PRAGMA table_info style compatibility checks.
+
+3. WoW-like active online save session shadow added
+   - When social/account identity attaches, the server opens an active online save session for account_uuid + slot_index.
+   - OFFICIAL_SAVE_WRITE persists the save as before, and also remembers the latest server-known payload in the active session shadow.
+   - On social socket disconnect, the server performs an idempotent final-flush of the latest server-known payload before destroying the active session.
+   - This mirrors the important WoW private-server behavior: active character session is flushed on disconnect/logout.
+
+4. Client saves now default to direct server upload instead of launcher cleanup upload
+   - OnlineSaveCacheEnabled defaults to true for fast title/hover preview cache.
+   - LauncherUploadsOnlineSaveCache now exists as a config value and defaults to false.
+   - With default settings, SaveSystem.SaveGame queues a background TCP upload to the Official Server instead of only writing a launcher dirty cache for later cleanup.
+
+5. Final disconnect save made safer
+   - FinalSaveFlushTimeoutMs default increased from 900ms to 3500ms.
+   - SkipFinalDisconnectSaveIfLastUploadWithinSeconds default changed to 0, meaning always request a final save on disconnect/quit.
+   - If the user sets it above 0, it now skips only after a recent successful upload, not merely because a save was queued.
+
+6. Blocking upload response bug fixed
+   - OfficialServerSaveSelectNative.cs had an accidental unconditional break inside SendOfficialServerRequestBlocking after reader.ReadLine().
+   - That made the blocking upload path stop before checking OFFICIAL_SAVE_WRITE_OK / OFFICIAL_SAVE_ERROR.
+   - Fixed so final/worker uploads can actually observe the server response.
+
+Important note
+--------------
+This build moves MMOnsterpatch closer to WoW behavior, but it does not magically make the Python server authoritative over every tile movement yet. The server can final-flush the latest server-known save payload. If the client is killed before the game sends/queues any save payload after movement, the server can only save the latest payload it has already received. Full WoW-exact position authority still requires a later stage where the MMO/world socket continuously sends enough live position/save-state data for the server to persist movement without depending on SaveSystem.SaveGame.
+
+Recommended test
+----------------
+1. Run CLEAN_AND_BUILD_ALL.bat or BUILD_MARIADB_NATIVE_OFFICIAL_AND_COPY_SERVER.bat.
+2. Start server.
+3. Launch Online Mode.
+4. Load an online slot.
+5. Walk/change state and trigger a normal save or return-to-title/quit.
+6. Confirm server logs show OFFICIAL_SAVE_WRITE and/or official-save-session final-flush.
+7. Re-login and confirm the online slot loads the latest server-saved state.

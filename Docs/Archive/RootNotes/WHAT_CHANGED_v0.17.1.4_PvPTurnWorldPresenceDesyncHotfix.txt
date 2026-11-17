@@ -1,0 +1,31 @@
+MMOnsterpatch v0.17.1.5 PvP Turn + World Presence Desync Hotfix
+
+Baseline: v0.17.1.3 Save Select Appearance Metadata Hotfix.
+
+Fixes attempted:
+1. PvP turn desync/freeze
+   - Added a local-turn token gate around BattleSystem.BattleStepStartOfTurn for player-side PvP turns.
+   - Existing enemy-side network replay remains in place.
+   - Battle requester starts with the token.
+   - Battle acceptor waits until the requester completes and sends BATTLE_DONE.
+   - BATTLE_DONE from the remote side grants the next local-turn token.
+   - Local BATTLE_DONE releases the local token.
+   - Added SelectMove auto-target command send for non-manual-target moves so the remote side is not stuck waiting for BATTLE_CMD on moves that do not call SelectTarget.
+
+2. One-sided world avatar disappearance
+   - Increased remote player stale removal tolerance from 10 seconds to 30 seconds to prevent brief snapshot/network/UI stalls from deleting an otherwise connected remote avatar on only one client.
+
+Not changed:
+- Save pipeline behavior from v0.17.1.2.
+- Save-select appearance metadata from v0.17.1.3.
+- Trading Post/session behavior from v0.17.1.1.
+- Ranked RP formula/performance modifiers.
+- Hook/water version-exclusive spawn rules.
+
+Testing requested:
+- Two-client normal PvP: requester should be able to act first; acceptor should not be able to act at the same time.
+- After requester move completes, acceptor should receive the turn and act.
+- After acceptor move completes, requester should receive the next turn.
+- Battle should not freeze after first turn.
+- Test manual-target and auto-target/no-target moves.
+- Walk around in the same map on two clients and watch for one-sided disappearance.

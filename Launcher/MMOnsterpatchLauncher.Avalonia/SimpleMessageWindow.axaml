@@ -1,0 +1,15 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MMOnsterpatchLauncher.Avalonia.SimpleMessageWindow"
+        Width="520" Height="280"
+        WindowStartupLocation="CenterOwner">
+  <Border Padding="20" Background="#12150F">
+    <Grid RowDefinitions="Auto,*,Auto">
+      <TextBlock x:Name="TitleText" FontSize="22" FontWeight="Bold" Foreground="#F2FFE9" />
+      <ScrollViewer Grid.Row="1" Margin="0,14,0,14">
+        <TextBlock x:Name="MessageText" Foreground="#D8ECD0" TextWrapping="Wrap" />
+      </ScrollViewer>
+      <Button Grid.Row="2" Content="OK" HorizontalAlignment="Right" MinWidth="90" Click="OkButton_Click" />
+    </Grid>
+  </Border>
+</Window>

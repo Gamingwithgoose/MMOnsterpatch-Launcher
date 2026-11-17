@@ -1,0 +1,7 @@
+MMOnsterpatch v0.18.6 PrizeSpawnShooCancelFinalizeFix
+
+- Added direct GameScript.ShooAway hook for server-owned world/prize spawns.
+- Shoo now reports WORLD_SPAWN_RESULT removed before vanilla destroys curInteractingMonObj.
+- Cancel-release watchdog now checks subMenuWildMon, panelMonNamePreview, SendToTown/Team submenus, and wildMonsSubMenu before treating a claim as cancelled.
+- Cancel-release grace increased to 1.0s to avoid transient vanilla UI false releases.
+- Preserved PvP, busy-lock, no-timeout presence, follower tint, and no-collider battle request behavior.

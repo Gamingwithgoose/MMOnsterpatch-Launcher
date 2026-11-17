@@ -1,0 +1,96 @@
+<Window x:Class="MMOnsterpatchLauncher.Wpf.ThemedMessageWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="MMOnsterpatch"
+        Width="470"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        AllowsTransparency="True"
+        FontFamily="Segoe UI"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="0" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="PanelBrush" Color="#F00A0F14" />
+        <SolidColorBrush x:Key="PanelBorderBrush" Color="#563489" />
+        <SolidColorBrush x:Key="TextBrush" Color="#ECECEC" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#B8BCC3" />
+        <SolidColorBrush x:Key="PurpleAccentLightBrush" Color="#DEC5FF" />
+        <DropShadowEffect x:Key="PurpleGlow" BlurRadius="14" ShadowDepth="0" Opacity="0.40" Color="#9A4DED" />
+        <DropShadowEffect x:Key="SoftPanelShadow" BlurRadius="22" ShadowDepth="0" Opacity="0.45" Color="#000000" />
+        <LinearGradientBrush x:Key="PurpleButtonBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#B15BFF" Offset="0" />
+            <GradientStop Color="#8D39E6" Offset="0.50" />
+            <GradientStop Color="#5A2197" Offset="1" />
+        </LinearGradientBrush>
+        <Style x:Key="PurplePrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="MinWidth" Value="94" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="Background" Value="{StaticResource PurpleButtonBrush}" />
+            <Setter Property="BorderBrush" Value="#B77BFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Root" CornerRadius="7" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Root" Property="Effect" Value="{StaticResource PurpleGlow}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Root" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ChromeButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Foreground" Value="#E8E8E8" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="10" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" Background="{StaticResource PanelBrush}" Effect="{StaticResource SoftPanelShadow}">
+        <Grid>
+            <Grid Height="42" VerticalAlignment="Top" Background="#EA0D1117" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <TextBlock x:Name="DialogTitleText" Text="MMOnsterpatch" Foreground="{StaticResource TextBrush}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" Margin="18,0,42,0" TextTrimming="CharacterEllipsis" />
+                <Button Content="×" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,10,0" Style="{StaticResource ChromeButtonStyle}" Click="CloseButton_Click" />
+            </Grid>
+
+            <Grid Margin="26,68,26,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="54" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid Width="44" Height="44" VerticalAlignment="Top">
+                    <Ellipse x:Name="IconCircle" Fill="#1A2028" Stroke="{StaticResource PurpleAccentLightBrush}" StrokeThickness="1" />
+                    <TextBlock x:Name="IconText" Text="i" Foreground="{StaticResource PurpleAccentLightBrush}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+                <StackPanel Grid.Column="1">
+                    <TextBlock x:Name="MessageText" Foreground="{StaticResource TextBrush}" FontSize="13.5" TextWrapping="Wrap" LineHeight="20" />
+                    <Button Content="OK" Style="{StaticResource PurplePrimaryButtonStyle}" HorizontalAlignment="Right" Margin="0,22,0,0" Click="OkButton_Click" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

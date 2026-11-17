@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>MMOnsterpatchLauncher.Core</AssemblyName>
+    <RootNamespace>MMOnsterpatchLauncher.Core</RootNamespace>
+    <Version>0.19.6</Version>
+    <AssemblyVersion>0.19.6.0</AssemblyVersion>
+    <FileVersion>0.19.6.0</FileVersion>
+    <InformationalVersion>v0.19.6-ClipboardCompileFix</InformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Bake both platform payloads into the shared Core assembly so the player-facing
+      Avalonia launcher can stage BepInEx without requiring a visible external Payloads folder.
+      LogicalName is intentionally path-like so EmbeddedPayloadExtractor can restore
+      the exact folder structure at runtime.
+    -->
+    <EmbeddedResource Include="..\Payloads\**\*" Exclude="..\Payloads\**\*.md">
+      <LogicalName>Payloads/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

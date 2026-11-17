@@ -1,0 +1,22 @@
+MMOnsterpatch Launcher v0.19.1 AvaloniaBuildAllFlatLinuxLauncher
+================================================================
+
+Build/package changes:
+- CLEAN_AND_BUILD_ALL.bat now invokes the Avalonia cross-platform launcher build through Clean_And_Build_All.ps1.
+- Releases\Launcher now contains the Linux launcher in the same folder as the Windows launcher output.
+- Releases\Launcher includes:
+  - MMOnsterpatchLauncher.exe (current/stable WPF Windows launcher)
+  - MMOnsterpatchLauncher.Avalonia.exe (Windows Avalonia test launcher)
+  - MMOnsterpatchLauncher-linux-x64 (Linux/Steam Deck Avalonia launcher)
+  - Payloads\win-x64
+  - Payloads\linux-x64
+  - RUN_LINUX_LAUNCHER_FROM_DECK.sh
+- Client patcher build output is copied into all launcher payloads: WPF, Avalonia win-x64, and Avalonia linux-x64.
+- Added Launcher\Build_Avalonia_Launcher_Pack.bat so the standalone Avalonia build can be run without PowerShell execution policy errors.
+- Build_Avalonia_Launcher_Pack.ps1 now outputs a flat folder instead of separate Windows/Linux child folders.
+
+Testing notes:
+- Use CLEAN_AND_BUILD_ALL.bat from the workspace root for the full bulk build.
+- For only the Avalonia launcher pack, run Launcher\Build_Avalonia_Launcher_Pack.bat.
+- On Steam Deck/Linux, copy the whole Releases\Launcher folder and run:
+    bash RUN_LINUX_LAUNCHER_FROM_DECK.sh

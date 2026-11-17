@@ -1,0 +1,1 @@
+This placeholder keeps the folder visible when zipped. It can be left alone or deleted after setup.

@@ -1,0 +1,42 @@
+MMOnsterpatch v0.17.1.6 OldRepoPvPFlowRollbackHotfix
+
+Purpose:
+- Restore the old working PvP battle rhythm from the public MMOnsterpatch repo instead of forcing the new deterministic/token turn scheduler.
+- Fix the observed behavior where player one can attack but the remote/player-two side never receives usable local battle control afterward.
+
+Client changes:
+- Removed the forced PvP GetNextBattler deterministic turn-order Harmony patch added in v0.17.1.5.
+- Removed the forced InitBattle initial-turn alignment Harmony patch added in v0.17.1.5.
+- Kept the old repo core rhythm:
+  - Local/player-side turns run vanilla BattleSystem logic.
+  - Opponent/enemy-side turns are network-driven and wait for BATTLE_CMD/BATTLE_HIT/BATTLE_DONE.
+  - Local move selections send BATTLE_CMD.
+  - Local vanilla damage sends authoritative BATTLE_HIT packets.
+  - Move completion sends BATTLE_DONE.
+  - Remote side replays authoritative hit packets instead of calculating random AI damage.
+- Kept the v0.17.1.5 auto-target BATTLE_CMD helper for moves that do not open the manual SelectTarget menu, because this preserves the old command/hit/done model while avoiding missing-command lockups on non-manual-target moves.
+
+Preserved:
+- v0.17.1.1 Trading Post save-session hotfix.
+- v0.17.1.2 server-truth save pipeline.
+- v0.17.1.3 save-select appearance metadata fix.
+- v0.17.1.4 remote avatar stale tolerance increase.
+- v0.17.1.5 authoritative hit replay packet path.
+- Ranked PvP packet/session/result foundation from v0.17.1.
+- Client/Launcher/Server folder layout.
+- CLEAN_AND_BUILD_ALL.bat and Clean_And_Build_All.ps1 entrypoints.
+
+Not changed:
+- No hook/water version-exclusive spawn work.
+- No ranked RP performance/remaining-MoN formula.
+- No Trading Post reconnect/lazy socket branch.
+- No save pipeline rewrite beyond existing v0.17.1.2 behavior.
+
+Testing focus:
+1. Test normal PvP first, not ranked.
+2. Player one selects a targeted attack.
+3. Confirm player two sees exact damage and then receives local battle input.
+4. Player two selects a targeted attack.
+5. Confirm player one sees exact damage and then receives local battle input.
+6. Repeat with a no/manual-target move.
+7. Confirm BATTLE_CMD, BATTLE_HIT, and BATTLE_DONE continue alternating in client/server logs.

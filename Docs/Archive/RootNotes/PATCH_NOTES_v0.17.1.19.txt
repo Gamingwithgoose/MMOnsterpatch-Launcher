@@ -1,0 +1,7 @@
+MMOnsterpatch v0.17.1.19 PvPDisconnectImmediateNoResultAbort
+
+- Client sends no-result BATTLE_END before manual MMO disconnect while in PvP.
+- Server notifies the remaining opponent on no-result/disconnect BATTLE_END.
+- Server active battle watchdog notifies remaining opponent if a participant disappears/stales outside normal disconnect cleanup.
+- Battle ends with no result/no RP on disconnect/timeout.
+- No normal PvP action queue/turn/damage/targeting changes.

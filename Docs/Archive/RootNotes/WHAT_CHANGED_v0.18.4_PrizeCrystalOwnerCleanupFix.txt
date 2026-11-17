@@ -1,0 +1,7 @@
+MMOnsterpatch v0.18.4 PrizeCrystalOwnerCleanupFix
+
+- Fixes prize crystal respawning after movement/map updates by clearing local lastEncounterMons[] reward slots after server handoff.
+- Keeps encounterCrystalObj hidden and spawnedEncounterCrystal=false after online crystal open.
+- Deletes owner-only prize/personal spawns when the owner leaves the map or disconnects.
+- Does not unlock prize spawns to public anymore.
+- Keeps v0.18.3 no-collider battle request fix and v0.18.1/v0.18.0 spawn busy/tint fixes.

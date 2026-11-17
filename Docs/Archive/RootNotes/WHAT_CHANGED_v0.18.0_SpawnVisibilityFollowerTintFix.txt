@@ -1,0 +1,41 @@
+MMOnsterpatch v0.18.0 SpawnVisibilityFollowerTintFix
+
+Built from v0.17.1.23 NoTimeoutSpawnClaimCancelFix.
+
+Confirmed from user testing before this build:
+- The disconnect/overworld spawn desync issue appeared resolved.
+- Leaving two clients running for roughly 4-5 minutes no longer caused disconnect/desync.
+
+Focused changes in this build:
+1. World spawn visibility during claim/interact
+- Server snapshots now include both available and busy world spawns.
+- Client no longer treats busy world spawn records as despawn/remove records.
+- Claim/interact/catch-start keeps the overworld mon visible.
+- Cancel/fail simply releases the claim and leaves the same spawn visible; no respawn pop/fail animation is played for the remote catch FX cleanup path.
+
+2. Local follower dialogue range
+- Follower interaction now uses a stricter native one-tile-facing check.
+- The previous broad forward/side tolerance could trigger follower dialogue when the player was merely beside the follower, which blocked testing battle requests.
+
+3. Remote follower day/night tint
+- Remote follower SpriteRenderers now receive the same day/night material/tolerance/color sync path used for follower/player tinting.
+- This targets the issue where remote players appeared night-tinted but their followers stayed untinted.
+
+Explicitly not changed:
+- PvP action queue
+- actionSeq
+- damage
+- target selection
+- ranked RP
+- disconnect/no-result battle abort
+- shield/faint sync
+
+Testing checklist:
+- Build and replace both client/launcher and full server folder.
+- Confirm server banner says v0.18.0-spawn-visibility-follower-tint-fix.
+- Confirm client log says MMO v0.18.0 SpawnVisibilityFollowerTintFix.
+- Interact with a world spawn and cancel: it should remain visible without a hide/respawn flicker.
+- Have one client interact/catch-start a spawn while another watches: the spawn should not disappear solely because it is busy.
+- Stand beside follower and press interact: follower dialogue should not open unless the player is facing the follower's tile.
+- Test battle request again after follower no longer hijacks input.
+- At night, verify remote player and remote follower tint match.

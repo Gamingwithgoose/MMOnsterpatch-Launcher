@@ -1,0 +1,25 @@
+# Generated build and release output
+**/bin/
+**/obj/
+/Releases/
+**/.vs/
+**/__pycache__/
+*.pyc
+*.pdb
+*.log
+*.user
+*.suo
+/Launcher/.publish_avalonia_tmp/
+/Launcher/.tarbuilder/
+# Local game reference assemblies; regenerate with Client/prepare_lib_from_game.bat
+/Client/lib/
+# Local server credentials and persistent data
+/Server/Config/database.ini
+/Server/OfficialServer/configs/worldserver.ini
+*.db
+*.sqlite
+*.sqlite3
+/Server/OfficialServer/data/*
+!/Server/OfficialServer/data/.gitkeep
+/Server/OfficialServer/logs/*
+!/Server/OfficialServer/logs/.gitkeep

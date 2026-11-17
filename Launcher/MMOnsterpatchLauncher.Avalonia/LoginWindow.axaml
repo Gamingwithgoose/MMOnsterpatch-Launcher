@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MMOnsterpatchLauncher.Avalonia.LoginWindow"
+        Title="MMOnsterpatch Account Login"
+        Width="420" Height="330"
+        WindowStartupLocation="CenterOwner">
+  <Border Padding="22" Background="#12150F">
+    <StackPanel Spacing="12">
+      <TextBlock Text="Sign in" FontSize="24" FontWeight="Bold" Foreground="#F2FFE9" />
+      <TextBlock Text="Use your MMOnsterpatch account for Online Play." Foreground="#B8CDB0" TextWrapping="Wrap" />
+      <TextBox x:Name="UsernameTextBox" PlaceholderText="Username or email" />
+      <TextBox x:Name="PasswordTextBox" PlaceholderText="Password" PasswordChar="•" />
+      <CheckBox x:Name="RememberCheckBox" Content="Remember me" />
+      <TextBlock x:Name="StatusText" Foreground="#FFDDA0" TextWrapping="Wrap" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <Button Content="Cancel" Click="CancelButton_Click" />
+        <Button x:Name="LoginButton" Content="Log In" Click="LoginButton_Click" MinWidth="90" />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</Window>

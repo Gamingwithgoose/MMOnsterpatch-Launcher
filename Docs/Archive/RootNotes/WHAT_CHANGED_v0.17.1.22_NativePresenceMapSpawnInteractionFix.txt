@@ -1,0 +1,50 @@
+MMOnsterpatch v0.17.1.22 NativePresenceMapSpawnInteractionFix
+================================================================
+Base package: v0.17.1.20 WorldSpawnCrystalAndBattleVisualRestoreFix
+Scope: client/launcher patcher + official server world presence/spawn cleanup only.
+
+Intentional non-goals / untouched areas
+--------------------------------------
+- PvP action queue / actionSeq / turn meter / damage / target selection were not intentionally changed.
+- Ranked RP logic was not intentionally changed.
+- Shield/faint visual sync was not intentionally changed.
+- Launcher/account logic was not intentionally changed.
+
+Client changes
+--------------
+1. Added local online-world reset cleanup on connect request, manual disconnect, and local map/location change.
+2. Added local map/location observer that clears stale remote players, followers, and server-owned world spawns when the local map changes.
+3. Made SNAP presence snapshots authoritative for the current map. Empty SNAP now removes stale remote players/followers.
+4. Made WORLD_SPAWNS snapshots authoritative, including empty snapshots. Missing same-map spawn ids are removed.
+5. Added orphan server-owned spawn marker cleanup so stale spawned MonObject/collider entries are hard-disabled, not merely hidden.
+6. Increased local server-spawn stale visual timeout from 20s to 90s to avoid idle clients self-removing valid server spawns too quickly.
+7. Increased remote player stale timeout from 30s to 45s to reduce idle disappearance while server heartbeats/snapshots continue.
+8. Replaced broad battle-request facing scan with the game's native one-tile-in-front interaction grid when available:
+   - GameScript.GetPlayerFacingDirPos()
+   - GameScript.WorldPosToTileKey(Vector3)
+   Fallback mirrors native 0.2 world-unit tile grid.
+
+Server changes
+--------------
+1. Server banner updated to v0.17.1.22-native-presence-spawn-cleanup.
+2. PING now refreshes player last_seen, so idle clients do not look dead just because they are not moving.
+3. Player-left cleanup now clears world spawns for the map if that map becomes empty.
+4. Map-change POS/STEP handling now clears that connection's world-spawn snapshot cache and sends an immediate WORLD_SPAWNS snapshot to repair/clear stale old-map state.
+5. Personal/prize world-spawn packet handling replaces previous same-owner/same-map personal reward spawns before creating new ones, reducing duplicate prize crystal/reward stack behavior.
+
+Build/verification notes
+------------------------
+- Python server module syntax was checked with python3 -m py_compile.
+- C# was not compiled in this environment because dotnet/csc/mono are not installed here.
+- Run your normal Clean + Build All from this workspace.
+- Deploy both sides: rebuilt client/launcher AND the entire rebuilt Releases\\Server folder.
+
+Test checklist
+--------------
+1. Idle test: two clients stand still on same map for several minutes. Remote player/follower and world spawns should not disappear, and world spawn top-up should continue.
+2. Battle request range test: face a remote player from far away. No request should open. Move to the exact tile in front of the remote player and interact; request should open.
+3. Follower/distance test: facing a remote follower from far away should not open a PvP request.
+4. Logout/relogin stale spawn test: both clients logout, log back in, and return to previous map. Old local-only spawns should be gone unless included in a fresh WORLD_SPAWNS snapshot.
+5. Map transition test: one player enters a cave/building/other map. Other players on the old map should no longer see the player's sprite/follower stuck at the entrance.
+6. Prize crystal test: after map clutter is gone, test whether prize crystal/reward spawns still respawn/stack for the same owner/map.
+7. PvP smoke test: normal PvP battle, random/all-target move, second back-to-back battle, and disconnect/no-result abort should still behave like v0.17.1.19/v0.17.1.14 chain.

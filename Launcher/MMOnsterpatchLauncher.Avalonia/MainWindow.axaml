@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MMOnsterpatchLauncher.Avalonia.MainWindow"
+        Title="MMOnsterpatch Launcher"
+        Width="1040" Height="720"
+        MinWidth="900" MinHeight="620"
+        WindowStartupLocation="CenterScreen"
+        Icon="avares://MMOnsterpatchLauncher/Assets/MMOnsterpatchLauncherIcon.ico">
+  <Grid RowDefinitions="Auto,*" Background="#12150F">
+    <Border Grid.Row="0" Padding="18" Background="#1D2817">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+        <Image Width="46" Height="46" Source="avares://MMOnsterpatchLauncher/Assets/MMOnsterpatchLauncherIcon.png" />
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+          <TextBlock Text="MMOnsterpatch Launcher" FontSize="24" FontWeight="Bold" Foreground="#F2FFE9" />
+          <TextBlock x:Name="PlatformText" Text="Platform" FontSize="13" Foreground="#A8D59C" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button x:Name="LoginButton" Content="Log In" Click="LoginButton_Click" MinWidth="92" />
+          <Button x:Name="LogoutButton" Content="Log Out" Click="LogoutButton_Click" MinWidth="92" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="2*,*" Margin="18" ColumnSpacing="18">
+      <ScrollViewer Grid.Column="0">
+        <StackPanel Spacing="14">
+          <Border Padding="16" Background="#1A1E17" CornerRadius="12">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Game install" FontSize="18" FontWeight="Bold" Foreground="#F2FFE9" />
+              <TextBlock Text="The launcher will try to autodetect the Steam install first. Manual browse is still available as a fallback." Foreground="#B8CDB0" TextWrapping="Wrap" />
+              <TextBox x:Name="GamePathText" IsReadOnly="True" PlaceholderText="Monsterpatch game executable path" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Auto Detect" Click="AutoDetectButton_Click" />
+                <Button Content="Browse" Click="BrowseButton_Click" />
+                <Button Content="Open Game Folder" Click="OpenGameFolderButton_Click" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Padding="16" Background="#1A1E17" CornerRadius="12">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Launch mode" FontSize="18" FontWeight="Bold" Foreground="#F2FFE9" />
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <RadioButton x:Name="OnlineRadioButton" Content="Online Play" IsChecked="True" />
+                <RadioButton x:Name="OfflineRadioButton" Content="Vanilla / Offline" />
+              </StackPanel>
+              <TextBlock x:Name="LinuxSteamText" Text="Linux/Steam Deck: Online Play stages Linux BepInEx and manages ./run_bepinex.sh %command% when enabled." Foreground="#B8CDB0" TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="PlayButton" Content="Play" Click="PlayButton_Click" MinWidth="150" />
+                <Button Content="Check Manifest" Click="CheckManifestButton_Click" />
+                <Button Content="Restore Vanilla Steam Launch Options" Click="RestoreSteamButton_Click" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Padding="16" Background="#1A1E17" CornerRadius="12">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Status" FontSize="18" FontWeight="Bold" Foreground="#F2FFE9" />
+              <TextBlock x:Name="AccountText" Text="Not signed in" Foreground="#B8CDB0" />
+              <TextBlock x:Name="ServerStatusText" Text="Server status: checking..." Foreground="#B8CDB0" />
+              <ProgressBar x:Name="BusyProgress" IsIndeterminate="True" IsVisible="False" />
+              <TextBlock x:Name="StatusText" Text="Ready." Foreground="#F2FFE9" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Border Grid.Column="1" Padding="14" Background="#0D100B" CornerRadius="12">
+        <Grid RowDefinitions="Auto,*">
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,10">
+            <TextBlock Text="Launcher log" FontSize="18" FontWeight="Bold" Foreground="#F2FFE9" />
+            <Button Grid.Column="1" Content="Copy" Click="CopyLogButton_Click" MinWidth="68" />
+            <Button Grid.Column="2" Content="Open" Click="OpenLogButton_Click" MinWidth="68" />
+          </Grid>
+          <TextBox Grid.Row="1"
+                   x:Name="LogText"
+                   IsReadOnly="True"
+                   AcceptsReturn="True"
+                   TextWrapping="Wrap"
+                   FontFamily="Consolas,Monospace"
+                   FontSize="12"
+                   Foreground="#CDE7C4"
+                   Background="#0D100B"
+                   BorderThickness="0" />
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</Window>

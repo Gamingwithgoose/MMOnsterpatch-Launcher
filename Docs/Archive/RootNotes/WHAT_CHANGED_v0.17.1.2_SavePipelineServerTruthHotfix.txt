@@ -1,0 +1,23 @@
+MMOnsterpatch v0.17.1.2 Save Pipeline Server Truth Hotfix
+
+Built from v0.17.1.1 Trading Post Save Session Hotfix.
+
+Purpose:
+- Fix online saves appearing completely broken after manual save/log out because stale launcher/game OnlineCache data could still be loaded as if it were server truth.
+
+Source-level behavior fixed:
+- `FetchOnlineSaveSlotsFromServer()` now tries Official Server metadata first. Cache is fallback-only.
+- `EnsureOnlineSaveSlotPayloadLoaded()` now fetches the selected slot payload from the Official Server first. Cache is fallback-only.
+- Successful direct `OFFICIAL_SAVE_WRITE` updates the local OnlineCache slot JSON/manifest after server ACK.
+- Successful async `OFFICIAL_SAVE_WRITE` does the same after the worker receives server ACK.
+- Stale `slot_N.dirty` is removed after confirmed server ACK.
+
+Test target:
+1. Launch Online Play.
+2. Load online slot.
+3. Walk a few steps.
+4. Manual save.
+5. Walk farther.
+6. Logout/close.
+7. Relaunch/reload.
+Expected: character loads at the latest logout/manual-save position according to the last server-accepted write, not stale cache.

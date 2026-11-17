@@ -1,0 +1,85 @@
+{
+  "handoff_version": "v0.14.3_FollowerAnimationTierFix",
+  "created_utc": "2026-07-05T20:38:38Z",
+  "user_preference": {
+    "style": "serious/down-to-business, no guesswork, evaluate first, confirm before broad changes",
+    "build_rule": "Do not change CLEAN_AND_BUILD_ALL.bat or Clean_And_Build_All.ps1 behavior unless explicitly approved.",
+    "baseline_rule": "Treat v0.14.0 merged follower AIO baseline plus v0.14.2 world spawn lifecycle fix as the current working baseline carried forward into v0.14.3."
+  },
+  "current_package": {
+    "name": "MMOnsterpatch_YOLO_v0.14.3_FollowerAnimationTierFix_SourceWorkspace.zip",
+    "base": "v0.14.2_WorldSpawnLifecycleFix",
+    "work_item": "FollowerAnimationTierFix",
+    "requires_client_replace": true,
+    "requires_server_replace": false,
+    "server_note": "No server logic changed from v0.14.2 for v0.14.3. Server replacement only needed if keeping all release folders/versions aligned.",
+    "build_command": "CLEAN_AND_BUILD_ALL.bat"
+  },
+  "confirmed_baselines": [
+    {
+      "version": "v0.13.0 Stable",
+      "status": "confirmed working",
+      "notes": "Website account -> launcher login -> Online Play -> title Log In -> online save selector."
+    },
+    {
+      "version": "v0.13.2 SocialsFix",
+      "status": "confirmed working/current stable at that time",
+      "notes": "MMO/social/chat connects using launcher account handoff instead of old GTS socket login flag."
+    },
+    {
+      "version": "v0.14.0 Baseline",
+      "status": "confirmed working",
+      "notes": "Follower source/runtime merged into AIO; no separate follower runtime DLL needed; fixed previous follower/screen issues."
+    },
+    {
+      "version": "v0.14.2 WorldSpawnLifecycleFix",
+      "status": "works pretty well per user",
+      "notes": "Server-owned world spawn lifecycle, map population controller, map-empty cleanup, refill/top-up, water zones."
+    }
+  ],
+  "v0_14_3_changes": [
+    "Follower animation tier detection now uses verified native PlayerController static fields isMoving/isRunning/ridingBroom.",
+    "Removed moveMod classification from follower animation tier detection because it caused walking/running animation speeds to appear swapped.",
+    "Kept config multipliers idle=0.75, walk=1, run=1.5, broom=2.",
+    "Updated AIO patcher/version metadata and manifest to v0.14.3_FollowerAnimationTierFix.",
+    "Added consolidated README, artifacts/baselines doc, and this handoff JSON."
+  ],
+  "architecture": {
+    "launcher": "WPF launcher stages online payload and restores user mods after game close. Online Play requires validated launcher account.",
+    "account_flow": "Account Website account -> launcher login/session -> game ticket/session config -> custom title Log In -> online save slot selector.",
+    "follower": "Follower behavior is now owned by AIO merged runtime in Client/MMOnsterpatchOfficialServerPatcher/AIOFollowersMergedRuntime.cs. No standalone follower runtime DLL is staged in the active payload.",
+    "world_spawns": "Server owns visible overworld spawn identity/lifecycle. Client renders and requests local generation for species/legal data. v0.14.2 added map population target and water-zone support.",
+    "database": "Current working DB backend is SQLite: AccountWebsite uses Data/Accounts/auth.db; Python server uses OfficialServer/data/bank.db and social.db. MariaDB files are scaffold/future, not live yet."
+  },
+  "server_data_preserve": [
+    "Releases/Server/Data/Accounts/",
+    "Releases/Server/OfficialServer/data/"
+  ],
+  "ports_and_routes": {
+    "account.gamingwithgoose.com": "Cloudflare Tunnel -> http://127.0.0.1:8080",
+    "mon-auth.gamingwithgoose.com": "Cloudflare Tunnel -> http://127.0.0.1:61527",
+    "mon.gamingwithgoose.com": "DNS-only raw TCP -> 61526 Trading Post",
+    "mmo.gamingwithgoose.com": "DNS-only raw TCP -> 61528 MMO, 61529 Social"
+  },
+  "known_next_notes": [
+    "Remove top-left online title screen status text like Server Status: Connected in a future UI cleanup.",
+    "Remove PVP tab line PVP Status: Registered after profile is shown in a future UI cleanup.",
+    "Future MariaDB official migration would make account/character/server-data editing easier without rebuilds, but is not live yet.",
+    "Future client/launcher build manager could analyze/backup/build/stage launcher and mod sources, but do not implement until requested.",
+    "For future follower item-find tuning, item chance was previously moved from 100% test mode down to 10% after 250 steps. Verify current staged config before adjusting."
+  ],
+  "testing_checklist": [
+    "Run CLEAN_AND_BUILD_ALL.bat.",
+    "Launch through MMOnsterpatch Launcher Online Play.",
+    "Verify follower animation: idle slower, walking normal, running faster than walking, broom fastest.",
+    "Verify v0.14.2 world spawns still work: no same-tile stacking on map transitions, map refills after catch/shoo, water mons can spawn in spawnZoneWater areas.",
+    "Verify online save selector, social/chat, Trading Post, and follower remote visibility still function."
+  ],
+  "do_not_break": [
+    "Launcher account handoff/title Log In to save selector.",
+    "Social/chat authentication via launcher account handoff.",
+    "Merged AIO follower baseline with no separate follower runtime DLL staging.",
+    "Server-owned world spawn lifecycle/water-zone fixes from v0.14.2.",
+    "Root build flow."
+  ]
+}

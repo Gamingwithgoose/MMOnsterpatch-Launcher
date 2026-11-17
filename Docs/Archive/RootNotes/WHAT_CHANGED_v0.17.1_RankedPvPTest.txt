@@ -1,0 +1,22 @@
+MMOnsterpatch v0.17.1 Ranked PvP Test
+
+Baseline:
+- Built from v0.17.0 Personal Prize Spawn Coexistence workspace.
+- Client, Launcher, and Server folder layouts preserved.
+- CLEAN_AND_BUILD_ALL.bat / Clean_And_Build_All.ps1 remain the normal build entry point.
+
+Ranked PvP test changes:
+- Ranked button now sends a ranked battle request instead of only showing unavailable.
+- Added RANKED_BATTLE_REQ / ACCEPT / DECLINE / RESULT / RESULT_ACK / ERROR flow to the MMO socket.
+- Ranked battles reuse the existing real PvP battle system rather than replacing it.
+- Client tracks ranked battle state and reports WIN from BattleSystem.Victory2 and LOSS from BattleSystem.Defeat once per ranked battle.
+- Server waits for both player result reports and applies RP only when reports are complementary WIN/LOSS.
+- Server validates ranked registration, rank gap, and team count using the Social ranked profile/rules foundation.
+- Server applies base win/loss RP only via ranked_profiles, ranked_matches, and ranked_rp_ledger.
+- Remaining-MoN performance/event modifiers stay locked and are not used in result resolution.
+- Server config enables Ranked Enabled and RP Writes Enabled for this test build.
+
+Testing notes:
+- Register both accounts in the Ranked tab before testing.
+- Use full public handles where possible, because the MMO socket resolves ranked profiles through Social DB public/display names.
+- Use two installs/accounts. Start normal Online Play, stand facing the other remote player, choose Ranked, accept, finish the battle, then verify Ranked tab/profile/RP updates.

@@ -1,0 +1,387 @@
+diff -ruN /mnt/data/orig_v0158/Client/MMOnsterpatchOfficialServerPatcher/OfficialServerSaveSelectNative.cs /mnt/data/work_v0158/Client/MMOnsterpatchOfficialServerPatcher/OfficialServerSaveSelectNative.cs
+--- /mnt/data/orig_v0158/Client/MMOnsterpatchOfficialServerPatcher/OfficialServerSaveSelectNative.cs	2026-07-05 20:34:54.000000000 +0000
++++ /mnt/data/work_v0158/Client/MMOnsterpatchOfficialServerPatcher/OfficialServerSaveSelectNative.cs	2026-07-06 02:45:53.608009898 +0000
+@@ -655,6 +655,7 @@
+         private static bool _launcherLogOutToSaveSelectBusy;
+         private static bool _launcherSilentLogOutReturnToSaveSelect;
+         private static float _lastOfficialSaveUploadAt;
++        private static double _lastOfficialSaveUploadCompletedAt;
+         private static float _lastWorldRatesRefreshAt = -9999f;
+         private static readonly object _officialSaveUploadLock = new object();
+         private static bool _officialSaveUploadInFlight;
+@@ -1713,9 +1714,11 @@
+                 SocialPort = _config.Bind("Official Server Network", "SocialPort", 61529, "Official Server social/save TCP port. This should match the Social server port.");
+                 NetworkTimeoutMs = _config.Bind("Official Server Network", "NetworkTimeoutMs", 5000, "Timeout in milliseconds for save-select online slot requests and server save uploads.");
+                 AsyncOfficialSaveUploads = _config.Bind("Official Server Network", "AsyncOfficialSaveUploads", true, "When true, normal online autosaves queue the server upload on a background thread so the game does not freeze on every SaveSystem.SaveGame. Final disconnect/quit still waits briefly for the latest queued save.");
+-                FinalSaveFlushTimeoutMs = _config.Bind("Official Server Network", "FinalSaveFlushTimeoutMs", 900, "Maximum milliseconds to wait for the latest queued online save when disconnecting/returning to title/quitting. Lower reduces exit freeze; higher is safer for slow networks.");
++                FinalSaveFlushTimeoutMs = _config.Bind("Official Server Network", "FinalSaveFlushTimeoutMs", 3500, "Maximum milliseconds to wait for the latest queued online save when disconnecting/returning to title/quitting. WoW-like mode prefers a reliable final save over instantly dropping the session.");
+                 LazyLoadOnlineSaveSlotPayloads = _config.Bind("Official Server Network", "LazyLoadOnlineSaveSlotPayloads", true, "When true, title Log In fetches only lightweight online save-slot metadata. The full save payload is fetched only for the selected slot, reducing the title Log In freeze.");
+-                SkipFinalDisconnectSaveIfLastUploadWithinSeconds = _config.Bind("Official Server Network", "SkipFinalDisconnectSaveIfLastUploadWithinSeconds", 8f, "If the latest online save upload completed/queued this recently, Disconnect/return-to-title skips forcing a duplicate final save. Set 0 to always force a final save.");
++                OnlineSaveCacheEnabled = _config.Bind("Official Server Network", "OnlineSaveCacheEnabled", true, "Keep using the local launcher/game cache for fast title previews and hover materialization. This cache is not the online source of truth.");
++                LauncherUploadsOnlineSaveCache = _config.Bind("Official Server Network", "LauncherUploadsOnlineSaveCache", false, "When false, the game client streams online saves directly to the Official Server in the background, WoW-style. When true, saves are staged for launcher cleanup upload after exit.");
++                SkipFinalDisconnectSaveIfLastUploadWithinSeconds = _config.Bind("Official Server Network", "SkipFinalDisconnectSaveIfLastUploadWithinSeconds", 0f, "Set 0 for WoW-like behavior: always request a final save on disconnect/quit. A positive value skips only after a recent successful server upload.");
+                 WorldRatesRefreshMinIntervalSeconds = _config.Bind("Official Server Network", "WorldRatesRefreshMinIntervalSeconds", 30f, "Minimum seconds between synchronous Official Server world-rate refreshes. Prevents duplicate network stalls when title login already refreshed rates before slot load.");
+ 
+                 OnlineWallpaperTintEnabled = _config.Bind("Save Select Online Background", "OnlineWallpaperTintEnabled", true, "When true, the embedded Online Mode save-select wallpaper is swapped onto the native save-menu background while Online Mode is active and restored when Offline Mode is active.");
+@@ -5328,8 +5331,8 @@
+ 
+         private static bool ShouldUseLauncherOnlineSaveCacheUpload()
+         {
+-            try { EnsureConfig(); return ShouldUseOnlineSaveCache() && (LauncherUploadsOnlineSaveCache == null || LauncherUploadsOnlineSaveCache.Value); }
+-            catch { return true; }
++            try { EnsureConfig(); return ShouldUseOnlineSaveCache() && LauncherUploadsOnlineSaveCache != null && LauncherUploadsOnlineSaveCache.Value; }
++            catch { return false; }
+         }
+ 
+         private static string GetOnlineSaveCacheDirectory()
+@@ -6148,7 +6151,10 @@
+                     _officialSaveUploadLastSuccess = ok;
+                     _officialSaveUploadLastError = error ?? string.Empty;
+                     if (ok)
++                    {
+                         _statusOverride = null;
++                        _lastOfficialSaveUploadCompletedAt = DateTime.UtcNow.Ticks / (double)TimeSpan.TicksPerSecond;
++                    }
+                     else
+                         _statusOverride = "Server Status: Save Failed";
+                 }
+@@ -6270,7 +6276,10 @@
+                 }
+                 string line = SendOfficialServerRequest("OFFICIAL_SAVE_WRITE|" + B64(token) + "|" + Math.Max(0, Math.Min(5, slot)).ToString() + "|" + B64(json), "OFFICIAL_SAVE_WRITE_OK", "OFFICIAL_SAVE_ERROR");
+                 if (!string.IsNullOrEmpty(line) && line.StartsWith("OFFICIAL_SAVE_WRITE_OK|", StringComparison.OrdinalIgnoreCase))
++                {
++                    _lastOfficialSaveUploadCompletedAt = DateTime.UtcNow.Ticks / (double)TimeSpan.TicksPerSecond;
+                     return true;
++                }
+                 Log("Official Server save upload failed for slot" + slot + ": " + DecodeServerError(line));
+                 return false;
+             }
+@@ -6405,12 +6414,12 @@
+                 float recentSeconds = SkipFinalDisconnectSaveIfLastUploadWithinSeconds != null ? Mathf.Max(0f, SkipFinalDisconnectSaveIfLastUploadWithinSeconds.Value) : 8f;
+                 if (recentSeconds <= 0f)
+                     return false;
+-                if (_lastOfficialSaveUploadAt <= 0f)
++                if (_lastOfficialSaveUploadCompletedAt <= 0f || !_officialSaveUploadLastSuccess)
+                     return false;
+-                float age = Time.unscaledTime - _lastOfficialSaveUploadAt;
++                float age = (float)((DateTime.UtcNow.Ticks / (double)TimeSpan.TicksPerSecond) - _lastOfficialSaveUploadCompletedAt);
+                 if (age >= 0f && age <= recentSeconds)
+                 {
+-                    Log("Skipping duplicate final Official Server save for " + reason + " because the latest online save was queued/completed " + age.ToString("0.00") + "s ago.");
++                    Log("Skipping duplicate final Official Server save for " + reason + " because the latest online save completed successfully " + age.ToString("0.00") + "s ago.");
+                     return true;
+                 }
+             }
+Binary files /mnt/data/orig_v0158/Server/OfficialServer/server_modules/__pycache__/mmonsterpatch_db.cpython-313.pyc and /mnt/data/work_v0158/Server/OfficialServer/server_modules/__pycache__/mmonsterpatch_db.cpython-313.pyc differ
+Binary files /mnt/data/orig_v0158/Server/OfficialServer/server_modules/__pycache__/mmonsterpatch_server.cpython-313.pyc and /mnt/data/work_v0158/Server/OfficialServer/server_modules/__pycache__/mmonsterpatch_server.cpython-313.pyc differ
+Binary files /mnt/data/orig_v0158/Server/OfficialServer/server_modules/__pycache__/mmonsterpatch_social_core.cpython-313.pyc and /mnt/data/work_v0158/Server/OfficialServer/server_modules/__pycache__/mmonsterpatch_social_core.cpython-313.pyc differ
+diff -ruN /mnt/data/orig_v0158/Server/OfficialServer/server_modules/mmonsterpatch_db.py /mnt/data/work_v0158/Server/OfficialServer/server_modules/mmonsterpatch_db.py
+--- /mnt/data/orig_v0158/Server/OfficialServer/server_modules/mmonsterpatch_db.py	2026-07-05 22:44:50.000000000 +0000
++++ /mnt/data/work_v0158/Server/OfficialServer/server_modules/mmonsterpatch_db.py	2026-07-06 02:44:09.208589276 +0000
+@@ -38,6 +38,7 @@
+ 
+ _LOCK = threading.RLock()
+ _SCHEMA_DONE: set[str] = set()
++_DATABASE_DONE: set[str] = set()
+ _CONFIG_CACHE: dict[str, str] | None = None
+ 
+ _ENV_TO_INI = {
+@@ -139,7 +140,17 @@
+ 
+ def _ensure_database(logical: str) -> str:
+     database = _db_name(logical)
++    # MariaDB-native v0.15.9: CREATE DATABASE is a startup/bootstrap concern, not a
++    # per-request cost.  The old SQLite-shaped call sites open many short-lived
++    # logical connections; without this process cache each request paid an extra
++    # server-level connection plus CREATE DATABASE IF NOT EXISTS round-trip before
++    # doing useful work.
++    key = f"{logical}:{database}"
++    if key in _DATABASE_DONE:
++        return database
+     with _LOCK:
++        if key in _DATABASE_DONE:
++            return database
+         try:
+             raw = _server_conn(None, autocommit=True)
+             try:
+@@ -149,6 +160,7 @@
+                 raw.close()
+         except Exception as ex:
+             raise OperationalError(str(ex)) from ex
++        _DATABASE_DONE.add(key)
+     return database
+ 
+ def _ensure_schema(logical: str, database: str):
+diff -ruN /mnt/data/orig_v0158/Server/OfficialServer/server_modules/mmonsterpatch_social_core.py /mnt/data/work_v0158/Server/OfficialServer/server_modules/mmonsterpatch_social_core.py
+--- /mnt/data/orig_v0158/Server/OfficialServer/server_modules/mmonsterpatch_social_core.py	2026-07-05 23:00:36.000000000 +0000
++++ /mnt/data/work_v0158/Server/OfficialServer/server_modules/mmonsterpatch_social_core.py	2026-07-06 02:45:19.080880261 +0000
+@@ -121,6 +121,15 @@
+     (1, -1, -2),
+ ]
+ 
++# WoW-like active online save lifecycle.  MariaDB remains durable storage, but
++# while a character is online the server keeps a small active-session shadow so
++# disconnect/logout can flush the latest server-known save before destroying the
++# social/world session.  This does not replace the full save_json source of truth;
++# it makes final disconnect handling explicit and observable.
++OFFICIAL_SAVE_SCHEMA_READY = False
++official_save_sessions_lock = threading.RLock()
++official_save_sessions: Dict[str, dict] = {}
++
+ 
+ def b64_decode(value: str) -> str:
+     try:
+@@ -551,6 +560,17 @@
+ 
+ 
+ def ensure_official_online_save_schema(con):
++    global OFFICIAL_SAVE_SCHEMA_READY
++    if OFFICIAL_SAVE_SCHEMA_READY:
++        return
++    with db_lock:
++        if OFFICIAL_SAVE_SCHEMA_READY:
++            return
++        _ensure_official_online_save_schema_uncached(con)
++        OFFICIAL_SAVE_SCHEMA_READY = True
++
++
++def _ensure_official_online_save_schema_uncached(con):
+     con.execute("""
+         CREATE TABLE IF NOT EXISTS official_online_saves (
+             account_uuid TEXT NOT NULL,
+@@ -710,10 +730,93 @@
+         return {"registered": 0, "rp": 0, "rank": "E", "wins": 0, "losses": 0, "draws": 0}
+ 
+ 
++def _official_save_session_key(account_uuid: str, slot_index: int) -> str:
++    return f"{account_uuid or ''}:{max(0, min(5, int(slot_index or 0)))}"
++
++
++def official_save_session_begin(handler, source: str = ""):
++    try:
++        account_uuid = str(getattr(handler, "account_uuid", "") or "").strip()
++        slot_index = int(getattr(handler, "slot_index", -1))
++        if not account_uuid or slot_index < 0:
++            return
++        key = _official_save_session_key(account_uuid, slot_index)
++        now = int(time.time())
++        with official_save_sessions_lock:
++            existing = official_save_sessions.get(key, {})
++            existing.update({
++                "account_uuid": account_uuid,
++                "slot_index": max(0, min(5, slot_index)),
++                "character_id": str(getattr(handler, "character_id", "") or ""),
++                "public_handle": str(getattr(handler, "public_handle", "") or ""),
++                "display_name": str(getattr(handler, "display_name", "") or ""),
++                "source_ip": str(getattr(handler, "client_address", [""])[0] or ""),
++                "connected_at": int(existing.get("connected_at", now) or now),
++                "last_seen_at": now,
++                "last_source": source or "session-begin",
++            })
++            official_save_sessions[key] = existing
++        print(f"[official-save-session] begin account={account_uuid} slot={slot_index} handle={getattr(handler, 'public_handle', '')} source={source}", flush=True)
++    except Exception as ex:
++        print(f"[official-save-session-error] begin failed: {ex}", flush=True)
++
++
++def official_save_session_remember_payload(account_uuid: str, slot_index: int, save_json: str, display_name: str = "", source: str = ""):
++    try:
++        account_uuid = str(account_uuid or "").strip()
++        slot_index = max(0, min(5, int(slot_index or 0)))
++        save_json = save_json or ""
++        if not account_uuid or not save_json.strip():
++            return
++        key = _official_save_session_key(account_uuid, slot_index)
++        now = int(time.time())
++        meta = extract_official_save_metadata(save_json)
++        with official_save_sessions_lock:
++            existing = official_save_sessions.get(key, {})
++            existing.update({
++                "account_uuid": account_uuid,
++                "slot_index": slot_index,
++                "save_json": save_json,
++                "display_name": display_name or meta.get("player_name") or existing.get("display_name", "Player"),
++                "last_seen_at": now,
++                "last_payload_at": now,
++                "last_source": source or "save-write",
++                "dirty": False,
++            })
++            official_save_sessions[key] = existing
++    except Exception as ex:
++        print(f"[official-save-session-error] remember payload failed: {ex}", flush=True)
++
++
++def official_save_session_flush_for_handler(handler, reason: str = "disconnect"):
++    try:
++        account_uuid = str(getattr(handler, "account_uuid", "") or "").strip()
++        slot_index = int(getattr(handler, "slot_index", -1))
++        if not account_uuid or slot_index < 0:
++            return
++        key = _official_save_session_key(account_uuid, slot_index)
++        with official_save_sessions_lock:
++            session = official_save_sessions.pop(key, None)
++        if not session:
++            return
++        save_json = str(session.get("save_json", "") or "")
++        if save_json.strip():
++            # This is the WoW-like final save hook.  In normal operation OFFICIAL_SAVE_WRITE
++            # already persisted this payload; on disconnect we still replay the latest
++            # server-known snapshot idempotently so the session cannot be destroyed with an
++            # unsaved dirty payload in memory.
++            saved_slot, display_name = write_official_save_slot_for_account(account_uuid, slot_index, save_json)
++            print(f"[official-save-session] final-flush account={account_uuid} slot={saved_slot} display={display_name} reason={reason} bytes={len(save_json.encode('utf-8', 'ignore'))}", flush=True)
++        else:
++            print(f"[official-save-session] close account={account_uuid} slot={slot_index} reason={reason} no-payload", flush=True)
++    except Exception as ex:
++        print(f"[official-save-session-error] final flush failed for {getattr(handler, 'public_handle', '?')}: {ex}", flush=True)
++
++
+ def official_save_slots_payload(session_token: str, source_ip: str = None) -> str:
+     account_uuid, _steam_id64 = resolve_official_account_from_session(session_token, source_ip)
+     slots = []
+-    with db_lock, db_conn() as con:
++    with db_conn() as con:
+         ensure_official_online_save_schema(con)
+         rows = {int(r[0]): r for r in con.execute(
+             "SELECT slot_index, save_json, display_name, updated_at FROM official_online_saves WHERE account_uuid=?",
+@@ -748,7 +851,7 @@
+     account_uuid, steam_id64 = resolve_official_account_from_session(session_token, source_ip)
+     lines = []
+     occupied = 0
+-    with db_lock, db_conn() as con:
++    with db_conn() as con:
+         ensure_official_online_save_schema(con)
+         rows = {int(r[0]): r for r in con.execute(
+             "SELECT slot_index, save_json, display_name, updated_at FROM official_online_saves WHERE account_uuid=?",
+@@ -776,7 +879,7 @@
+     account_uuid, steam_id64 = resolve_official_account_from_session(session_token, source_ip)
+     lines = []
+     occupied = 0
+-    with db_lock, db_conn() as con:
++    with db_conn() as con:
+         ensure_official_online_save_schema(con)
+         rows = {int(r[0]): r for r in con.execute(
+             "SELECT slot_index, display_name, updated_at FROM official_online_saves WHERE account_uuid=?",
+@@ -803,7 +906,7 @@
+ def official_save_slot_payload_v2_line(session_token: str, slot_index: int, source_ip: str = None) -> Tuple[str, str, int]:
+     account_uuid, steam_id64 = resolve_official_account_from_session(session_token, source_ip)
+     slot_index = max(0, min(5, int(slot_index)))
+-    with db_lock, db_conn() as con:
++    with db_conn() as con:
+         ensure_official_online_save_schema(con)
+         row = con.execute(
+             "SELECT slot_index, save_json, display_name, updated_at FROM official_online_saves WHERE account_uuid=? AND slot_index=? LIMIT 1",
+@@ -826,8 +929,10 @@
+         return line, account_uuid, 0
+ 
+ 
+-def write_official_save_slot(session_token: str, slot_index: int, save_json: str, source_ip: str = None) -> Tuple[int, str]:
+-    account_uuid, _steam_id64 = resolve_official_account_from_session(session_token, source_ip)
++def write_official_save_slot_for_account(account_uuid: str, slot_index: int, save_json: str) -> Tuple[int, str]:
++    account_uuid = str(account_uuid or '').strip()
++    if not account_uuid:
++        raise RuntimeError('Account UUID is required for online save persistence.')
+     slot_index = max(0, min(5, int(slot_index)))
+     save_json = save_json or ''
+     if not save_json.strip():
+@@ -835,7 +940,10 @@
+     meta = extract_official_save_metadata(save_json)
+     display_name = meta.get('player_name') or 'Player'
+     now = int(time.time())
+-    with db_lock, db_conn() as con:
++    # No global db_lock here: MariaDB transactions provide isolation, and removing
++    # this broad process lock prevents save reads/chat/trading operations from
++    # serializing behind unrelated save writes.
++    with db_conn() as con:
+         ensure_official_online_save_schema(con)
+         existing = con.execute(
+             "SELECT created_at FROM official_online_saves WHERE account_uuid=? AND slot_index=?",
+@@ -865,6 +973,13 @@
+     return slot_index, display_name
+ 
+ 
++def write_official_save_slot(session_token: str, slot_index: int, save_json: str, source_ip: str = None) -> Tuple[int, str]:
++    account_uuid, _steam_id64 = resolve_official_account_from_session(session_token, source_ip)
++    saved_slot, display_name = write_official_save_slot_for_account(account_uuid, slot_index, save_json)
++    official_save_session_remember_payload(account_uuid, saved_slot, save_json, display_name, 'OFFICIAL_SAVE_WRITE')
++    return saved_slot, display_name
++
++
+ def archived_characters_dir() -> str:
+     if OFFICIAL_ARCHIVE_DIR:
+         path = OFFICIAL_ARCHIVE_DIR
+@@ -2440,6 +2555,7 @@
+         except Exception as ex:
+             print(f"[Admin] Could not deliver pending MoN grants to {self.public_handle}: {ex}", flush=True)
+         broadcast(f"CHAT|GLOBAL|{b64_encode('System')}|{b64_encode(self.public_handle + ' joined chat.')}|{int(time.time())}", skip=self)
++        official_save_session_begin(self, "social identity attached")
+ 
+     def handle(self):
+         print(f"[connect] {self.client_address}", flush=True)
+@@ -2460,6 +2576,7 @@
+         except Exception as ex:
+             print(f"[error] {self.client_address}: {ex}", flush=True)
+         finally:
++            official_save_session_flush_for_handler(self, "social socket disconnect")
+             with clients_lock:
+                 was_known = self in clients
+                 cid = clients.pop(self, None)
+diff -ruN /mnt/data/orig_v0158/WHAT_CHANGED_v0.15.9_WoWSaveLifecycle.txt /mnt/data/work_v0158/WHAT_CHANGED_v0.15.9_WoWSaveLifecycle.txt
+--- /mnt/data/orig_v0158/WHAT_CHANGED_v0.15.9_WoWSaveLifecycle.txt	1970-01-01 00:00:00.000000000 +0000
++++ /mnt/data/work_v0158/WHAT_CHANGED_v0.15.9_WoWSaveLifecycle.txt	2026-07-06 02:46:25.519146364 +0000
+@@ -0,0 +1,55 @@
++MMOnsterpatch YOLO v0.15.9 WoW Save Lifecycle / MariaDB Stability
++==================================================================
++
++Baseline
++--------
++Started from:
++  MMOnsterpatch_YOLO_v0.15.8_PerfStability_BuildWorkspace_fixed5_mariadb_burst_perf.zip
++
++This is a source/build workspace package. I did not build it here. The existing
++CLEAN_AND_BUILD_ALL.bat and BUILD_MARIADB_NATIVE_OFFICIAL_AND_COPY_SERVER.bat are left in place.
++
++What changed
++------------
++1. MariaDB bootstrap overhead reduced
++   - Server/OfficialServer/server_modules/mmonsterpatch_db.py now caches CREATE DATABASE completion per logical database.
++   - This stops every short-lived social/save/trading connection from opening a server-level connection and running CREATE DATABASE IF NOT EXISTS first.
++
++2. Official online save schema checks are startup-style instead of per-request
++   - Server/OfficialServer/server_modules/mmonsterpatch_social_core.py now caches official_online_saves schema setup once per server process.
++   - Normal save slot reads/writes no longer repeatedly run CREATE TABLE / CREATE INDEX / PRAGMA table_info style compatibility checks.
++
++3. WoW-like active online save session shadow added
++   - When social/account identity attaches, the server opens an active online save session for account_uuid + slot_index.
++   - OFFICIAL_SAVE_WRITE persists the save as before, and also remembers the latest server-known payload in the active session shadow.
++   - On social socket disconnect, the server performs an idempotent final-flush of the latest server-known payload before destroying the active session.
++   - This mirrors the important WoW private-server behavior: active character session is flushed on disconnect/logout.
++
++4. Client saves now default to direct server upload instead of launcher cleanup upload
++   - OnlineSaveCacheEnabled defaults to true for fast title/hover preview cache.
++   - LauncherUploadsOnlineSaveCache now exists as a config value and defaults to false.
++   - With default settings, SaveSystem.SaveGame queues a background TCP upload to the Official Server instead of only writing a launcher dirty cache for later cleanup.
++
++5. Final disconnect save made safer
++   - FinalSaveFlushTimeoutMs default increased from 900ms to 3500ms.
++   - SkipFinalDisconnectSaveIfLastUploadWithinSeconds default changed to 0, meaning always request a final save on disconnect/quit.
++   - If the user sets it above 0, it now skips only after a recent successful upload, not merely because a save was queued.
++
++6. Blocking upload response bug fixed
++   - OfficialServerSaveSelectNative.cs had an accidental unconditional break inside SendOfficialServerRequestBlocking after reader.ReadLine().
++   - That made the blocking upload path stop before checking OFFICIAL_SAVE_WRITE_OK / OFFICIAL_SAVE_ERROR.
++   - Fixed so final/worker uploads can actually observe the server response.
++
++Important note
++--------------
++This build moves MMOnsterpatch closer to WoW behavior, but it does not magically make the Python server authoritative over every tile movement yet. The server can final-flush the latest server-known save payload. If the client is killed before the game sends/queues any save payload after movement, the server can only save the latest payload it has already received. Full WoW-exact position authority still requires a later stage where the MMO/world socket continuously sends enough live position/save-state data for the server to persist movement without depending on SaveSystem.SaveGame.
++
++Recommended test
++----------------
++1. Run CLEAN_AND_BUILD_ALL.bat or BUILD_MARIADB_NATIVE_OFFICIAL_AND_COPY_SERVER.bat.
++2. Start server.
++3. Launch Online Mode.
++4. Load an online slot.
++5. Walk/change state and trigger a normal save or return-to-title/quit.
++6. Confirm server logs show OFFICIAL_SAVE_WRITE and/or official-save-session final-flush.
++7. Re-login and confirm the online slot loads the latest server-saved state.

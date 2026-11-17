@@ -1,0 +1,21 @@
+MMOnsterpatch v0.17.1.8.2 OldPvPBattleFlowExactRestore
+
+Purpose:
+- Restore the old working PvP in-battle behavior while keeping ranked PvP as a wrapper around the same battle flow.
+
+Changed:
+- Removed the v0.17.x forced/local first-turn alignment path.
+- Removed the token turn scheduler leftovers from active PvP state.
+- Removed the SelectMove auto-command helper.
+- Restored the old BattleStepStartOfTurn PvP behavior:
+  - Vanilla BattleSystem decides battler order from normal turn meters/speed.
+  - Local/player-side battler turns run vanilla.
+  - Enemy-side battler turns are handled by MMOnsterpatchRealPvP.NetworkEnemyTurn.
+- Restored old target-selection command sending behavior.
+- Restored old remote-command timeout fallback behavior.
+
+Preserved:
+- Ranked PvP request/accept/start wiring.
+- Ranked WIN/LOSS reporting.
+- Server-side ranked result/RP distribution paths.
+- Existing regular PvP request/accept/start wiring.

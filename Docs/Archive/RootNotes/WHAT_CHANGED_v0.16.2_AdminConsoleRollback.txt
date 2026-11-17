@@ -1,0 +1,18 @@
+MMOnsterpatch v0.16.2 Admin Console Rollback
+==============================================
+
+Base:
+- Restored the confirmed-good v0.16.0 clean fixed baseline.
+- Keeps the v0.15.9.8 Trading Post DB context fix.
+- Keeps the safe v0.16.0 extras: removed chat Disconnect button, Repack Manager admin command text field, default DB password config.
+
+Rollback:
+- Does NOT include the v0.16.1 in-game admin console / ADMIN_STATUS / admin role live-social changes.
+- This intentionally removes the admin feature that reintroduced movement bog when Goose was owner-enabled.
+
+Not included:
+- No Trading Post reconnect experiments.
+- No lazy socket experiment.
+- No save rollback experiment.
+- No DB ping-every-query.
+- No spawn/snapshot changes.

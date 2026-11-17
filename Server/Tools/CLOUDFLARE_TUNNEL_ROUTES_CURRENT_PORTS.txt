@@ -1,0 +1,19 @@
+MMOnsterpatch Cloudflare Tunnel routes - v0.12.8
+
+Use Published Application routes for HTTP services only:
+
+1) account.gamingwithgoose.com
+   Type: HTTP
+   Service URL: 127.0.0.1:8080
+
+2) mon-auth.gamingwithgoose.com
+   Type: HTTP
+   Service URL: 127.0.0.1:61527
+
+Do NOT route mon-auth to 7000. The future AuthServer placeholder is disabled.
+Current Steam/OpenID auth is inside the Current Official Server on port 61527.
+
+Keep these as Cloudflare DNS-only A records / raw TCP, not tunnel web apps:
+
+mmo.gamingwithgoose.com -> server public IP, TCP 61528 and TCP 61529
+mon.gamingwithgoose.com -> server public IP, TCP 61526

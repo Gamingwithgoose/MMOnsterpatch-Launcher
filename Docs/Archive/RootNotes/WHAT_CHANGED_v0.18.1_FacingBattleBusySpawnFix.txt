@@ -1,0 +1,34 @@
+MMOnsterpatch v0.18.1 FacingBattleBusySpawnFix
+
+Built on v0.18.0 SpawnVisibilityFollowerTintFix.
+
+Purpose:
+- Make PvP battle requests use strict vanilla-style facing/tile interaction.
+- Prevent a second player from interacting with or spoof-catching a server-owned overworld spawn while another player has its interaction menu open.
+
+Client changes:
+- Reworked facing interaction checks used by remote player battle requests and local follower dialogue to match GameScript.GetPlayerFacingDirPos + WorldPosToTileKey exact front-tile behavior.
+- Removed broad forward/side tolerance from battle request/follower interaction checks; standing beside a player/follower no longer counts.
+- Battle request target lookup now requires the rendered remote player root to occupy the exact tile directly in front of the local player.
+- Added server-owned spawn busy metadata to MMOWorldSpawnMarker: State and OwnerId.
+- If a spawn is busy for another player, local Interact closes the vanilla wild-mon menu immediately and shows "This MoN is busy.".
+- If the server replies WORLD_SPAWN_BUSY / busy claim-fail after a local interaction already opened, the client cancels the local attempt without sending a catch/fail result and shows the busy message.
+- Busy spawns remain visible; busy is now an interaction lock, not a visual hide.
+
+Server changes:
+- Accepted WORLD_SPAWN_CLAIM now marks the spawn busy and broadcasts a WORLD_SPAWN_ADD busy record to other clients immediately, instead of waiting for the next repair snapshot.
+- Server banner updated to v0.18.1-facing-battle-busy-spawn-fix.
+
+Not changed:
+- PvP action queue / actionSeq / damage / target resolution.
+- Ranked RP logic.
+- Disconnect/no-timeout presence fixes from v0.17.1.23.
+- Spawn visibility and follower night tint fixes from v0.18.0.
+
+Test checklist:
+- Stand beside a remote player while not facing them: no battle request should open.
+- Face a remote player on the exact adjacent tile: battle request should open.
+- Stand beside/facing away from follower: follower dialogue should not open unless facing its tile.
+- Client A opens a server-owned overworld mon menu and waits; Client B interacts with same mon: Client B should get "This MoN is busy." and no catch/shoo spoof should be possible.
+- Client A cancels: the same mon should remain visible/available and Client B can interact after release.
+- Successful catch/shoo still removes the spawn globally.

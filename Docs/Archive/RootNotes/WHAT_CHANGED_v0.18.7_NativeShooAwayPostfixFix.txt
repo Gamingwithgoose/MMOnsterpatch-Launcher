@@ -1,0 +1,17 @@
+MMOnsterpatch v0.18.7 NativeShooAwayPostfixFix
+
+Built from v0.18.6 PrizeSpawnShooCancelFinalizeFix.
+
+Fixes:
+- Prize/server-owned spawn ShooAway no longer hides or clears the mon before vanilla GameScript.ShooAway runs.
+- ShooAway Prefix now only captures the active spawn id.
+- ShooAway Postfix reports the server removal after native ShooAway completes.
+- This prevents the NullReferenceException caused by clearing curInteractingMonObj before vanilla ShooAway used it.
+
+Preserved:
+- v0.18.6 menu/cancel watchdog behavior.
+- v0.18.3 no-collider battle request fix.
+- world spawn busy lock.
+- idle/no-disconnect fix.
+- remote follower tint.
+- PvP core untouched.

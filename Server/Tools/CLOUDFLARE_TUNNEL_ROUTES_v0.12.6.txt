@@ -1,0 +1,22 @@
+MMOnsterpatch Cloudflare Tunnel Routes - v0.12.8
+
+Published application routes through the MMOnsterpatch tunnel:
+
+account.gamingwithgoose.com
+  Service type: HTTP
+  Service URL : http://127.0.0.1:8080
+
+mon-auth.gamingwithgoose.com
+  Service type: HTTP
+  Service URL : http://127.0.0.1:61527
+
+DNS-only raw TCP records, not tunnel published applications:
+
+mon.gamingwithgoose.com
+  DNS-only A/CNAME to the server public IP/host
+  TCP 61526 = Trading Post
+
+mmo.gamingwithgoose.com
+  DNS-only A/CNAME to the server public IP/host
+  TCP 61528 = MMO multiplayer
+  TCP 61529 = Social/chat/guild

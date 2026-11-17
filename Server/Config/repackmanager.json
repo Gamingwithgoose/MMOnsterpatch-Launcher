@@ -1,0 +1,43 @@
+{
+  "autoRestartAll": false,
+  "startServersMinimized": true,
+  "authServer": {
+    "name": "Steam Auth - inside Current Official Server",
+    "exePath": "",
+    "arguments": "",
+    "workingDirectory": "OfficialServer",
+    "url": "https://mon-auth.gamingwithgoose.com/",
+    "localUrl": "http://127.0.0.1:61527/"
+  },
+  "worldServer": {
+    "name": "Current Official Server",
+    "exePath": "python",
+    "arguments": "-u \"MMOnsterpatchServer.py\" --config \"configs\\worldserver.ini\"",
+    "workingDirectory": "OfficialServer",
+    "url": "mmo.gamingwithgoose.com:61528",
+    "localUrl": "127.0.0.1:61528"
+  },
+  "website": {
+    "name": "Account Website",
+    "exePath": "AccountWebsite/MMOnsterpatch.AccountWebsite.exe",
+    "arguments": "",
+    "workingDirectory": "AccountWebsite",
+    "url": "https://account.gamingwithgoose.com/",
+    "localUrl": "http://127.0.0.1:8080/"
+  },
+  "patchPayloadRoot": "PatchPayload",
+  "publishRoot": "C:\\[MMOnsterpatch] UnOfficial Server Repack",
+  "productionDns": {
+    "account": "account.gamingwithgoose.com",
+    "mmo": "mmo.gamingwithgoose.com",
+    "tradingPost": "mon.gamingwithgoose.com",
+    "auth": "mon-auth.gamingwithgoose.com"
+  },
+  "currentPorts": {
+    "tradingPost": 61526,
+    "steamOpenId": 61527,
+    "mmo": 61528,
+    "social": 61529
+  },
+  "buildNotes": "v0.12.8 account/status foundation: current ports locked; future auth placeholder disabled; server manager owns child process cleanup."
+}

@@ -1,0 +1,31 @@
+MMOnsterpatch v0.15.9.8 Minimal Trading Post DB Context Fix
+============================================================
+
+Baseline:
+- Built directly from the user-supplied `MMOnsterpatch v0.15.9 WoW Style DB.zip` package.
+- This is the pack the user reported has normal movement but Trading Post disconnect/errors after posting/listing/cancel.
+
+Focused change only:
+- Removed `with self.conn:` blocks from Trading Post socket-session handlers in:
+  - cmd_save
+  - cmd_gts_create3
+  - cmd_gts_cancel
+
+Why:
+- In the MariaDB wrapper, `Connection.__exit__` closes the underlying DB connection.
+- The Trading Post handler stores `self.conn` as its persistent socket-session DB connection.
+- Using `with self.conn:` inside a command closes that persistent connection when the command finishes.
+- The next command on the same Trading Post socket, usually My Listings/Mail Count, then fails with PyMySQL InterfaceError(0, "").
+
+What was NOT changed:
+- No client-side Trading Post reconnect changes.
+- No lazy Trading Post socket change.
+- No save/cache rollback change.
+- No world spawn change.
+- No snapshot change.
+- No social/chat UI change.
+- No Repack Manager/admin console change.
+
+Test target:
+- Movement should remain exactly like the supplied v0.15.9 WoW Style DB baseline.
+- Trading Post post/cancel should not poison the DB connection before My Listings refresh.

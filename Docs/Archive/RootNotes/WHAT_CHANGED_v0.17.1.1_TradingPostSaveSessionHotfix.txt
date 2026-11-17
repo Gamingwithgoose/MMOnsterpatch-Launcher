@@ -1,0 +1,16 @@
+MMOnsterpatch v0.17.1.2 Save Pipeline Server Truth Hotfix
+
+Baseline: v0.17.1 Ranked PvP Test.
+
+Fixes:
+- Trading Post disconnect/logout no longer revokes or clears the shared launcher/AIO session token while Launcher Online Mode or an Official Online Save Session is active.
+- Server Trading Post SESSION_LOGOUT now detaches only that Trading Post socket/account context instead of revoking the launcher account token used by Official Save uploads.
+
+Why:
+- Official online saves authenticate through the same launcher/AIO session token that Trading Post uses.
+- Revoking/clearing that token from Trading Post can make later manual saves, logout saves, and quit saves fail to upload even though the world server is still running.
+
+Not changed:
+- No item #1 hook/water version-exclusive spawn changes.
+- No RP formula/performance modifier changes.
+- No folder layout changes.

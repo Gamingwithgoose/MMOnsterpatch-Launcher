@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Monsterpatch_Followers_Patcher</AssemblyName>
+    <RootNamespace>Goose.Monsterpatch.FollowersPatcher</RootNamespace>
+    <LibDir>$(MSBuildProjectDirectory)\..\..\lib</LibDir>
+    <LibDir Condition="!Exists('$(LibDir)\Mono.Cecil.dll')">$(MSBuildProjectDirectory)\..\..\..\lib</LibDir>
+    <LibDir Condition="!Exists('$(LibDir)\Mono.Cecil.dll')">$(MSBuildProjectDirectory)\..\..\..\..\lib</LibDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Cecil"><HintPath>$(LibDir)\Mono.Cecil.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

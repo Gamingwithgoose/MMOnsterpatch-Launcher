@@ -1,0 +1,31 @@
+MMOnsterpatch v0.17.0 Personal Prize Spawn Coexistence Fix
+==========================================================
+
+Base:
+- Built from v0.16.2 Admin Console Rollback / v0.16.0 clean fixed baseline.
+- Keeps the confirmed Trading Post DB context fix.
+- Keeps removed chat Disconnect button.
+- Keeps Repack Manager admin command text field.
+- Keeps default DB password config.
+- Does NOT re-add the in-game admin console/button.
+
+Changed in v0.17.0:
+- Personal crystal/reward spawns (owp-*) and normal public world spawns (ow-*) are now treated as separate visible entities.
+- Client duplicate cleanup no longer removes a public ow-* spawn because a personal owp-* spawn exists on the same tile.
+- Client duplicate cleanup no longer removes a personal owp-* spawn because a public ow-* spawn exists on the same tile.
+- Snapshot/add repair clears stale CaughtAndHidden flags for personal spawns as well as public spawns.
+- If a personal prize and public world spawn overlap, the owning player should prefer interacting with their personal prize first.
+- Non-owner players should prefer a public spawn over someone else's locked personal prize when both are in range; if only the locked prize is in range, permission is still denied.
+- Server public spawn population/occupancy counts now ignore personal owp-* spawns, so personal prizes do not reserve/hide normal public overworld spawn slots.
+
+Intended behavior:
+- Personal prize spawns are visible to everyone.
+- Personal prize spawns are only interactable by the owning player.
+- Normal public world spawns stay visible and active while a personal prize spawn exists.
+- Personal prize spawns stay until catch, shoo/despawn flow, or owner map-leave cleanup.
+
+Not included:
+- No Trading Post reconnect experiments.
+- No admin console/UI code.
+- No save rollback experiments.
+- No spawn/snapshot isolation toggles.

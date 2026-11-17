@@ -1,0 +1,16 @@
+# MMOnsterpatch YOLO v0.17.1.11 Server-Owned PvP Action Queue Test
+
+## v0.17.1.11 Server-Owned PvP Action Queue Test
+
+PvP battle test rebuilt from the v0.17.1.8.3 old-flow baseline. This removes the broken experimental BattleStep-bias / fastest-first-only / alternating-player-token approach and replaces it with a server-owned action grant queue.
+
+- Client sends `BATTLE_SNAPSHOT` with local active slots, HP, level, and speed stat.
+- Server initializes a headless PvP turn-meter state using Monsterpatch-style speed scaling and server RNG.
+- Server sends exactly one `BATTLE_GRANT` at a time: `battleId`, `actionSeq`, owner player id, actor slot.
+- Client `GetNextBattler` is patched during PvP so only the server-granted mon can act.
+- `BATTLE_CMD`, `BATTLE_HIT`, and `BATTLE_DONE` now carry `actionSeq`.
+- Server rejects stale/wrong-owner/wrong-slot action packets.
+- Server advances the action queue only after the current granted action sends `BATTLE_DONE`.
+
+Test scope: this is the first server-owned PvP architecture pass. The server owns action order/action identity and tracks HP from reported hits; the acting client still uses vanilla BattleSystem to resolve the move/damage for this test. Full headless server damage/effect/passive resolution is the next larger port.
+

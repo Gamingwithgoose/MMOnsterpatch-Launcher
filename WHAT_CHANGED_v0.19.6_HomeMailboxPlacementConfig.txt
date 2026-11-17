@@ -1,0 +1,28 @@
+MMOnsterpatch v0.19.6 Home Mailbox Placement Config Test
+
+Base:
+- MMOnsterpatch_Launcher_Avalonia_ClipboardCompileFix_v0.19.6_source(1).zip
+
+Scope:
+- Client-only mailbox placement/config adjustment.
+- Server, database, launcher staging/build flow, and existing mail commands remain unchanged.
+- Keep building with the normal CLEAN_AND_BUILD_ALL.bat flow.
+
+Changes:
+- Keeps the existing Trading Post mail migration: Trading Post is marketplace-only and the full existing mail UI opens from the My Town mailbox.
+- Adds a runtime-generated config file for the world mailbox:
+  BepInEx/config/goose.monsterpatch.home_mailbox.cfg
+- The config is generated after the game is launched once through the launcher/build.
+- Adds tunable mailbox placement/visual values:
+  [Placement] TargetX, TargetY, TargetZ, ReplaceRadius
+  [Visual] Scale, PixelsPerUnit, DisableExtraChildRenderers
+  [Interaction] ColliderWidth, ColliderHeight
+  [Advanced] UseParentHouseAnchor, AnchorOffsetX, AnchorOffsetY
+  [Debug] LogNearbyBarrelsOnce, LogRadius
+- Disables parent-house-anchor placement by default because it could pick the wrong house/barrel.
+- Uses explicit TargetX/TargetY and a tighter ReplaceRadius by default so Goose can tune the purple-circled player-house barrel and avoid the red-X doorway barrel.
+- Logs nearby My Town barrel candidates once so TargetX/TargetY can be tuned from the BepInEx log.
+
+Default intent:
+- Replace/hide the decorative barrel beside the blue-roof player house with the embedded mailbox icon.
+- If no barrel is found within ReplaceRadius, spawn a mailbox at TargetX/TargetY.

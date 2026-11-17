@@ -1,0 +1,24 @@
+MMOnsterpatch v0.16.2 Clean Fixed Baseline Extras
+
+Baseline:
+- Built from the confirmed-good v0.15.9.8 minimal Trading Post DB context fix baseline.
+- Keeps the good-movement Trading Post fix: removed bad `with self.conn:` usage from the persistent Trading Post MariaDB handler.
+
+Added in v0.16.2:
+- Removed the chat/social window Connect/Disconnect button entirely; the window now only displays connection status.
+- Added a Repack Manager admin command input field under Console / Events. Enter or Send writes the command to the running Official Server stdin.
+- Set the default MariaDB database password in Server/Config/database.ini.
+- Set the Python MariaDB fallback password to the same package default when neither env nor config provides a password.
+- Updated main project version metadata to 0.16.2 / v0.16.2_CleanFixedBaselineExtras.
+
+Intentionally NOT included:
+- No Trading Post reconnect rewrites.
+- No lazy Trading Post socket experiment.
+- No save rollback experiment.
+- No DB ping-before-every-query change.
+- No world spawn or snapshot changes.
+
+Validation performed here:
+- Python server modules compiled with py_compile.
+- XAML parsed as XML.
+- No Windows/.NET build was run in this Linux container because dotnet/msbuild are unavailable. Use CLEAN_AND_BUILD_ALL.bat on Windows.
