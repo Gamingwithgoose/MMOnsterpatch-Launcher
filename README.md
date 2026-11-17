@@ -1,5 +1,5 @@
 # MMOnsterpatch Launcher
-Closed source launcher for MMOnsterpatch
+Launcher for MMOnsterpatch
 
 # How to Use the MMOnsterpatch Launcher
 
