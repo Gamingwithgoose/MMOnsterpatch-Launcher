@@ -8,10 +8,10 @@
     <ApplicationIcon>Assets\MMOnsterpatchLauncherIcon.ico</ApplicationIcon>
     <AssemblyName>MMOnsterpatchLauncher</AssemblyName>
     <RootNamespace>MMOnsterpatchLauncher.Wpf</RootNamespace>
-    <Version>0.18.4</Version>
-    <AssemblyVersion>0.18.4.0</AssemblyVersion>
-    <FileVersion>0.18.4.0</FileVersion>
-    <InformationalVersion>v0.18.4_PrizeCrystalOwnerCleanupFix</InformationalVersion>
+    <Version>0.19.11</Version>
+    <AssemblyVersion>0.19.11.0</AssemblyVersion>
+    <FileVersion>0.19.11.0</FileVersion>
+    <InformationalVersion>v0.19.11-ScreenshotMultipartFix</InformationalVersion>
 
     <!-- Windows single-EXE release defaults. Visual Studio publish profile below uses the same settings. -->
     <PublishSingleFile>true</PublishSingleFile>

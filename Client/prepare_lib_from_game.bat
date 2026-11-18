@@ -56,6 +56,9 @@ for %%F in (
   UnityEngine.UI.dll
   UnityEngine.UIModule.dll
   Unity.TextMeshPro.dll
+  System.Net.Http.dll
+  UnityEngine.UnityWebRequestModule.dll
+  System.Runtime.Serialization.dll
 ) do (
   if exist "%MANAGED%\%%F" (
     copy /Y "%MANAGED%\%%F" "%LIB%\%%F" >nul
@@ -81,6 +84,9 @@ for %%F in (
   UnityEngine.UI.dll
   UnityEngine.UIModule.dll
   Unity.TextMeshPro.dll
+  System.Net.Http.dll
+  UnityEngine.UnityWebRequestModule.dll
+  System.Runtime.Serialization.dll
 ) do (
   if not exist "%LIB%\%%F" (
     echo Missing in Client\lib after prepare: %%F

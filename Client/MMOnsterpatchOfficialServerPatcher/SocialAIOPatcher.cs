@@ -591,7 +591,7 @@ namespace Goose.Monsterpatch.SocialPatcher
         {
             try
             {
-                return Instance != null && ChatInputActive;
+                return (Instance != null && ChatInputActive) || Goose.Monsterpatch.Screenshots.MMOScreenshotRuntime.CapturesInput;
             }
             catch
             {
@@ -604,6 +604,8 @@ namespace Goose.Monsterpatch.SocialPatcher
             Instance = this;
             global::MMOnsterpatchAIOBootstrap.Ensure();
             LoadConfig();
+
+            Goose.Monsterpatch.Screenshots.MMOScreenshotRuntime.EnsureHost();
 
             windowRect = new Rect(windowX.Value, windowY.Value, windowWidth.Value, windowHeight.Value);
             ClampWindowRect();
@@ -784,6 +786,11 @@ namespace Goose.Monsterpatch.SocialPatcher
             DrainInboundLines();
             MonitorActiveSaveConnectionState();
             OfficialServerVisibilityAndAutoConnectTick();
+            if (Goose.Monsterpatch.Screenshots.MMOScreenshotRuntime.CapturesInput)
+            {
+                Input.ResetInputAxes();
+                return;
+            }
             if (!Goose.Monsterpatch.OfficialServer.OfficialServerSaveSelectNativeRuntime.IsOfficialOnlineModeActive() || !IsLoadedSaveWorldActive())
                 return;
 
@@ -5208,6 +5215,33 @@ namespace Goose.Monsterpatch.SocialPatcher
             };
 
             ApplyNativeFont(nativeGuiFont, windowStyle, titleStyle, headerStyle, msgStyle, inlineMsgStyle, faintStyle, inputStyle, smallButtonStyle, tabButtonStyle, tabButtonActiveStyle, cardStyle, resizeStyle);
+        }
+
+        // Return independent active-state styles while sharing the exact native artwork
+        // and font used by chat. Changing screenshot focus never changes chat opacity.
+        internal static GUIStyle[] CreateScreenshotStyles()
+        {
+            if (Instance == null) return null;
+            Instance.EnsureStyles();
+            var styles = new[] {
+                new GUIStyle(Instance.windowStyle), new GUIStyle(Instance.titleStyle),
+                new GUIStyle(Instance.msgStyle), new GUIStyle(Instance.smallButtonStyle),
+                new GUIStyle(Instance.inputStyle), new GUIStyle(Instance.cardStyle)
+            };
+            Color32 text = new Color32(53, 34, 34, 255);
+            Instance.SetAllStyleStates(styles[0], Instance.paperTex, text);
+            Instance.SetAllStyleStates(styles[3], Instance.buttonTex, text);
+            styles[3].hover.background = Instance.buttonHoverTex;
+            styles[3].focused.background = Instance.buttonHoverTex;
+            styles[3].active.background = Instance.buttonActiveTex;
+            Instance.SetAllStyleStates(styles[4], Instance.textFieldTex, text);
+            Instance.SetAllStyleStates(styles[5], Instance.cardTex, text);
+            return styles;
+        }
+
+        internal static void ReleaseInputForScreenshot()
+        {
+            if (Instance != null) Instance.ReleaseChatInputForExternalMenu();
         }
 
         private static void ApplyNativeFont(Font font, params GUIStyle[] styles)
