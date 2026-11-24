@@ -25,7 +25,8 @@ builder.WebHost.UseUrls(websiteConfig.BindUrls);
 var browserOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
 {
     "https://gamingwithgoose.com",
-    "https://www.gamingwithgoose.com"
+    "https://www.gamingwithgoose.com",
+    "https://mmonsterpatch.gamingwithgoose.com"
 };
 foreach (string candidate in new[] { websiteConfig.PublicUrl, websiteConfig.PublicHttpsUrl, websiteConfig.LocalUrl }
     .Concat(websiteConfig.AllowedBrowserOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries)))
