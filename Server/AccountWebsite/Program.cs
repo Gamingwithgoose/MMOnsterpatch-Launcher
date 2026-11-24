@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.Extensions.FileProviders;
 using MySqlConnector;
 using System.Net;
@@ -19,7 +20,29 @@ var accountStore = new AccountStore(repackRoot);
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls(websiteConfig.BindUrls);
 
+// Permit only explicitly trusted browser frontends; native launcher requests
+// do not need CORS. Keep authentication requirements unchanged.
+var browserOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+{
+    "https://gamingwithgoose.com",
+    "https://www.gamingwithgoose.com"
+};
+foreach (string candidate in new[] { websiteConfig.PublicUrl, websiteConfig.PublicHttpsUrl, websiteConfig.LocalUrl }
+    .Concat(websiteConfig.AllowedBrowserOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries)))
+{
+    if (Uri.TryCreate(candidate.Trim(), UriKind.Absolute, out var uri) &&
+        (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp))
+        browserOrigins.Add(uri.GetLeftPart(UriPartial.Authority));
+}
+builder.Services.AddCors(options => options.AddPolicy("TrustedBrowserApi", policy =>
+    policy.WithOrigins(browserOrigins.ToArray())
+        .WithMethods("GET", "POST", "OPTIONS")
+        .WithHeaders("Content-Type", "Authorization", "Accept")
+        .AllowCredentials()));
+
 var app = builder.Build();
+app.UseRouting();
+app.UseCors("TrustedBrowserApi");
 
 if (Directory.Exists(patchPayload))
 {
@@ -530,6 +553,7 @@ static JsonSerializerOptions JsonOpts() => new() { PropertyNameCaseInsensitive =
 
 sealed class WebsiteConfig
 {
+    public string AllowedBrowserOrigins { get; set; } = "";
     public string BindUrls { get; set; } = "http://127.0.0.1:8080";
     public string PublicUrl { get; set; } = "https://account.gamingwithgoose.com";
     public string PublicHttpsUrl { get; set; } = "https://account.gamingwithgoose.com";
@@ -555,6 +579,7 @@ sealed class WebsiteConfig
             else if (key.Equals("PublicHttpsUrl", StringComparison.OrdinalIgnoreCase)) cfg.PublicHttpsUrl = value.TrimEnd('/');
             else if (key.Equals("PatchManifestUrl", StringComparison.OrdinalIgnoreCase)) cfg.PatchManifestUrl = value;
             else if (key.Equals("LocalUrl", StringComparison.OrdinalIgnoreCase)) cfg.LocalUrl = value.TrimEnd('/');
+            else if (key.Equals("AllowedBrowserOrigins", StringComparison.OrdinalIgnoreCase)) cfg.AllowedBrowserOrigins = value;
         }
         return cfg;
     }
