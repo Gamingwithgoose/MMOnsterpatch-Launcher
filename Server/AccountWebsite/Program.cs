@@ -294,6 +294,10 @@ app.MapPost("/api/account/login", async (HttpContext ctx) =>
 {
     var req = await JsonSerializer.DeserializeAsync<LoginRequest>(ctx.Request.Body, JsonOpts()) ?? new LoginRequest("", "");
     var result = accountStore.Login(req, GetClientIp(ctx));
+    // Browser clients may authenticate subsequent API calls using the same secure
+    // session cookie as the HTML login. Native launchers retain the JSON token.
+    if (result.Success && result.Session is not null && ctx.Request.Headers.ContainsKey("Origin"))
+        accountStore.WriteSessionCookie(ctx, result.Session.SessionToken);
     return result.Success ? Results.Json(result.ToApi()) : Results.BadRequest(result.ToApi());
 });
 
