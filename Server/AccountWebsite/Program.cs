@@ -646,6 +646,7 @@ sealed class AccountStore
     {
         _db = DatabaseConfig.Load(repackRoot);
         EnsureDb();
+        Console.WriteLine($"[AuthDiagnostic] Effective MariaDB host={_db.Host} port={_db.Port} authDatabase={_db.AuthDatabase} socialDatabase={_db.SocialDatabase}");
     }
 
     public AccountResult Register(RegisterRequest req, string sourceIp)
@@ -698,12 +699,21 @@ sealed class AccountStore
             string pw = req.Password ?? "";
             using var con = OpenAuth();
             var account = GetAccountByUsernameOrEmail(con, key);
-            if (account is null || !PasswordHasher.Verify(pw, account.PasswordSalt, account.PasswordHash))
+            if (account is null)
+            {
+                Console.WriteLine($"[AuthDiagnostic] Login rejected: account not found; identifierProvided={key.Length > 0}; database={_db.AuthDatabase}");
                 return AccountResult.Fail("Invalid username/email or password.");
+            }
+            if (!PasswordHasher.Verify(pw, account.PasswordSalt, account.PasswordHash))
+            {
+                Console.WriteLine("[AuthDiagnostic] Login rejected: account found but password verification failed.");
+                return AccountResult.Fail("Invalid username/email or password.");
+            }
             account.LastLoginUtc = DateTime.UtcNow;
             account.UpdatedUtc = DateTime.UtcNow;
             InsertOrReplaceAccount(con, account);
             var session = CreateSession(con, account, sourceIp);
+            Console.WriteLine("[AuthDiagnostic] Login accepted: password verified and session created.");
             return AccountResult.Ok(account, session, "Logged in.");
         }
     }
@@ -725,8 +735,14 @@ sealed class AccountStore
     {
         string? auth = ctx.Request.Headers.Authorization.FirstOrDefault();
         if (!string.IsNullOrWhiteSpace(auth) && auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-            return GetSession(auth[7..].Trim());
-        return GetSessionFromCookie(ctx);
+        {
+            var session = GetSession(auth[7..].Trim());
+            if (session is null) Console.WriteLine("[AuthDiagnostic] Session rejected: bearer token supplied but not accepted.");
+            return session;
+        }
+        var cookieSession = GetSessionFromCookie(ctx);
+        if (cookieSession is null) Console.WriteLine($"[AuthDiagnostic] Session rejected: no accepted bearer token; sessionCookiePresent={ctx.Request.Cookies.ContainsKey(WebSessionCookieName)}");
+        return cookieSession;
     }
 
     public AccountSession? GetSessionFromCookie(HttpContext ctx)
@@ -741,7 +757,9 @@ sealed class AccountStore
         {
             using var con = OpenAuth();
             var s = GetSessionInternal(con, token);
-            if (s is null || s.RevokedUtc is not null || s.ExpiresUtc <= DateTime.UtcNow) return null;
+            if (s is null) { Console.WriteLine("[AuthDiagnostic] Session lookup: token not found."); return null; }
+            if (s.RevokedUtc is not null) { Console.WriteLine("[AuthDiagnostic] Session lookup: revoked."); return null; }
+            if (s.ExpiresUtc <= DateTime.UtcNow) { Console.WriteLine("[AuthDiagnostic] Session lookup: expired."); return null; }
             using var cmd = con.CreateCommand();
             cmd.CommandText = "UPDATE launcher_sessions SET last_seen_utc=@n WHERE session_token=@t OR aio_session_token=@t";
             cmd.Parameters.AddWithValue("@n", DateTime.UtcNow.ToString("o"));
