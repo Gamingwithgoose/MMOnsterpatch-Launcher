@@ -13,8 +13,8 @@ public static class OfficialServerWorldRatesRuntime
     private static bool _loadedFromServer;
     private static float _expRate = 1f;
     private static float _satsRate = 1f;
-    // v0.9.8: server shiny setting is denominator-style. 1000 = 1/1000, 1 = guaranteed shiny.
-    private static float _shinyRate = 1000f;
+    // v0.9.8: server shiny setting is denominator-style. 200 = 1/200, 1 = guaranteed shiny.
+    private static float _shinyRate = 200f;
     private static float _catchRate = 1f;
     private static float _itemDropRate = 1f;
     private static float _randomEncounterRate = 1f;
@@ -85,7 +85,7 @@ public static class OfficialServerWorldRatesRuntime
             {
                 _expRate = ClampRate(ParseRate(p[1], 1f), 0f, 100f);
                 _satsRate = ClampRate(ParseRate(p[2], 1f), 0f, 100f);
-                _shinyRate = ClampRate(ParseRate(p[3], 1000f), 0f, 1000000f);
+                _shinyRate = ClampRate(ParseRate(p[3], 200f), 0f, 1000000f);
                 _catchRate = ClampRate(ParseRate(p[4], 1f), 0f, 100f);
                 _itemDropRate = ClampRate(ParseRate(p[5], 1f), 0f, 100f);
                 _randomEncounterRate = ClampRate(ParseRate(p[6], 1f), 0f, 100f);
@@ -118,7 +118,7 @@ public static class OfficialServerWorldRatesRuntime
             _loadedFromServer = false;
             _expRate = 1f;
             _satsRate = 1f;
-            _shinyRate = 1000f;
+            _shinyRate = 200f;
             _catchRate = 1f;
             _itemDropRate = 1f;
             _randomEncounterRate = 1f;
@@ -197,21 +197,6 @@ public static class OfficialServerWorldRatesRuntime
             GameScript.encounterTrigger = adjusted;
         }
         catch { }
-    }
-
-    public static void ApplyShinyRate(Mon mon)
-    {
-        if (!IsOnlineRatesActive || mon == null)
-            return;
-        float rate = ShinyRate;
-        if (rate <= 0f)
-        {
-            mon.isShiny = false;
-            return;
-        }
-
-        float desiredChance = rate <= 1f ? 1f : Mathf.Clamp(1f / rate, 0f, 1f);
-        mon.isShiny = UnityEngine.Random.value < desiredChance;
     }
 
     public static IEnumerator RatedCatchCoroutine(GameScript gs)
@@ -400,12 +385,18 @@ public static class OfficialServerWorldRates_GameScript_AddSATS_Patch
     }
 }
 
-[HarmonyPatch(typeof(GameScript), "SetUniqueIDAndInitializeMon")]
-public static class OfficialServerWorldRates_GameScript_SetUniqueIDAndInitializeMon_Patch
+[HarmonyPatch(typeof(GameScript), "SparklyOdds")]
+public static class OfficialServerWorldRates_GameScript_SparklyOdds_Patch
 {
-    public static void Postfix(Mon m)
+    public static void Prefix(ref int chance)
     {
-        OfficialServerWorldRatesRuntime.ApplyShinyRate(m);
+        if (!OfficialServerWorldRatesRuntime.IsOnlineRatesActive || chance <= 0)
+            return;
+        float denominator = OfficialServerWorldRatesRuntime.ShinyRate;
+        // Zero disables shiny generation as closely as the native denominator API permits.
+        if (denominator <= 0f) { chance = int.MaxValue; return; }
+        if (Math.Abs(denominator - 200f) < 0.001f) return;
+        chance = (int)Math.Max(1d, Math.Min(int.MaxValue, Math.Round((double)chance * denominator / 200d, MidpointRounding.AwayFromZero)));
     }
 }
 

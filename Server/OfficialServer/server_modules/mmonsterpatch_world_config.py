@@ -103,8 +103,8 @@ class WorldConfig:
 
     exp_rate: float = 1.0
     sats_rate: float = 1.0
-    # Shiny odds are denominator-style: 1000 = 1/1000, 500 = 1/500, 1 = guaranteed shiny.
-    shiny_odds_denominator: float = 1000.0
+    # Shiny odds are denominator-style: 200 = 1/200, 500 = 1/500, 1 = guaranteed shiny.
+    shiny_odds_denominator: float = 200.0
     catch_rate: float = 1.0
     item_drop_rate: float = 1.0
     random_encounter_rate: float = 1.0
@@ -195,7 +195,7 @@ def load_world_config(path: Optional[str] = None) -> WorldConfig:
     try:
         if not cp.has_option("Rates", "Shiny Odds Denominator") and cp.has_option("Rates", "Shiny Rate"):
             r = float(old_shiny_rate)
-            cfg.shiny_odds_denominator = 1000.0 if r <= 0 else max(1.0, 1000.0 / r)
+            cfg.shiny_odds_denominator = 200.0 if r <= 0 else max(1.0, 200.0 / r)
     except Exception:
         pass
     cfg.catch_rate = _get_float(cp, "Rates", "Catch Rate", cfg.catch_rate)

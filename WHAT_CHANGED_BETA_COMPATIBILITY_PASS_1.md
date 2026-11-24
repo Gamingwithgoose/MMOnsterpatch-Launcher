@@ -1,0 +1,7 @@
+# Monsterpatch beta compatibility — pass 1
+
+- Active server visible spawn rarity matches beta: common 70%, uncommon 24%, rare 5%, very rare 1%. Client selects from native encounter pools, including very rare; tile-specific pool and water detection, recursive active spawn zones, ore/dig exclusions. Version exclusives remain excluded from shared overworld generation only; existing personal prize protection is untouched.
+- GTS/Trading Post server listings already accept arbitrary nonempty species keys; retain listing, ownership, payment and exact requested-species checks. Client requested-species catalog now includes native GameScript catalog plus loaded assets.
+- Server new defaults use shiny denominator 200; legacy multiplier settings are interpreted relative to beta baseline. Explicit denominator settings remain unchanged (set to 200 manually if desired). Client routes shiny rate through native SparklyOdds rather than rerolling monsters. Zero is approximated by maximum native denominator, not a guaranteed disable.
+- Native beta TownObject baseline tracks moves by id; existing mailbox replaces a barrel or falls back to a runtime-only object. Movement and persistence require in-game testing; no mailbox changes yet.
+- Followers, Global Box, PvP, personal prizes and save schema unchanged. No live database migration. Capture coroutine and embedded CatchBottleRates DLL remain pending. No compilation or gameplay testing performed; build against beta assemblies and regenerate all payloads before deployment.

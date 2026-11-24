@@ -4483,7 +4483,11 @@ CancelButtonHeight = 30
             try
             {
                 HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                MonScriptableObject[] mons = Resources.FindObjectsOfTypeAll<MonScriptableObject>();
+                // Include the complete native catalog, even if an individual species asset has not been loaded for display yet.
+                GameScript catalogGame = UnityEngine.Object.FindObjectOfType<GameScript>();
+                IEnumerable<MonScriptableObject> mons = Resources.FindObjectsOfTypeAll<MonScriptableObject>();
+                if (catalogGame != null && catalogGame.monScriptableObject != null)
+                    mons = catalogGame.monScriptableObject.Concat(mons);
                 foreach (MonScriptableObject monData in mons)
                 {
                     if (monData == null)

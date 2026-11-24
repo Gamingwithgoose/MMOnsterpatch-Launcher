@@ -413,12 +413,13 @@ def get_occupied_world_spawn_zone_ids(cluster, scene):
     return occupied
 
 def roll_visible_world_spawn_rarity():
-    # Official visible overworld table from WildMonSpawnManager:
-    # rand < 5 = rare, rand >= 35 = common, otherwise uncommon.
+    # Beta WildMonSpawnManager: 1% very rare, 5% rare, 24% uncommon, 70% common.
     r = random.randrange(0, 100)
-    if r < 5:
+    if r < 1:
+        return "veryrare"
+    if r < 6:
         return "rare"
-    if r >= 35:
+    if r >= 30:
         return "common"
     return "uncommon"
 

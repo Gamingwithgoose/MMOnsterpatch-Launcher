@@ -6429,9 +6429,9 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
             List<string> records = new List<string>();
             HashSet<string> seenTiles = new HashSet<string>(StringComparer.Ordinal);
             int index = 0;
-            foreach (Transform child in parent)
+            foreach (Transform child in parent.GetComponentsInChildren<Transform>(false))
             {
-                if (child == null)
+                if (child == null || child == parent)
                     continue;
                 string nm = child.name ?? "";
                 if (!IsServerReportedSpawnZoneName(nm))
@@ -6439,6 +6439,8 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
 
                 Vector3 pos = child.position;
                 string zoneType = GetServerReportedSpawnZoneType(nm);
+                GameScript zoneGs = GetGameScript();
+                if (zoneGs != null && zoneGs.IsWaterTile(pos)) zoneType = "water";
                 // Tile identity is still map/tile based; type is transmitted separately.
                 // This prevents grass+water duplicate objects on the same tile from stacking.
                 string zoneId = Mathf.RoundToInt(pos.x).ToString(CultureInfo.InvariantCulture) + ":" + Mathf.RoundToInt(pos.y).ToString(CultureInfo.InvariantCulture);
@@ -6468,13 +6470,14 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
 
     private bool IsServerReportedSpawnZoneName(string name)
     {
-        return string.Equals(name ?? "", "spawnZone", StringComparison.Ordinal)
-            || string.Equals(name ?? "", "spawnZoneWater", StringComparison.Ordinal);
+        return (name ?? "").StartsWith("spawnZone", StringComparison.Ordinal)
+            && !name.StartsWith("spawnZoneOre", StringComparison.Ordinal)
+            && !name.StartsWith("spawnZoneDigSpot", StringComparison.Ordinal);
     }
 
     private string GetServerReportedSpawnZoneType(string name)
     {
-        return string.Equals(name ?? "", "spawnZoneWater", StringComparison.Ordinal) ? "water" : "grass";
+        return (name ?? "").StartsWith("spawnZoneWater", StringComparison.Ordinal) ? "water" : "grass";
     }
 
 
@@ -6518,7 +6521,7 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
                     continue;
 
                 float closest = 99999f;
-                foreach (Transform child in candidate)
+                foreach (Transform child in candidate.GetComponentsInChildren<Transform>(false))
                 {
                     if (child == null || !IsServerReportedSpawnZoneName(child.name ?? ""))
                         continue;
@@ -6549,9 +6552,9 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
         int count = 0;
         try
         {
-            foreach (Transform child in parent)
+            foreach (Transform child in parent.GetComponentsInChildren<Transform>(false))
             {
-                if (child != null && IsServerReportedSpawnZoneName(child.name ?? ""))
+                if (child != null && child != parent && IsServerReportedSpawnZoneName(child.name ?? ""))
                     count++;
             }
         }
@@ -6588,8 +6591,20 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
             if (gs == null)
                 return;
 
+            int previousPool = gs.curEncounterPool;
+            try
+            {
+            foreach (Collider2D collider in Physics2D.OverlapPointAll(new Vector2(x, y), 8192))
+            {
+                int poolIndex;
+                if (int.TryParse(collider.name, out poolIndex) && gs.encounterPoolScriptableObject != null && poolIndex >= 0 && poolIndex < gs.encounterPoolScriptableObject.Length && gs.encounterPoolScriptableObject[poolIndex] != null)
+                {
+                    gs.curEncounterPool = poolIndex;
+                    break;
+                }
+            }
             Mon m = null;
-            bool waterMonOnly = waterZone;
+            bool waterMonOnly = waterZone || gs.IsWaterTile(new Vector3(x, y, z));
 
             // Official Server overworld spawns are shared-world spawns. Do not let
             // a generator client choose version-exclusive encounter entries here.
@@ -6618,7 +6633,7 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
 
             try { m.curLevel = Mathf.Max(1, level); } catch { }
             try { m.curExp = gs.GetTotalExpForLevel(m.curLevel); } catch { }
-            try { gs.SetUniqueIDAndInitializeMon(m); } catch { }
+            try { gs.UseCafeShinyChanceForNextMon(); gs.SetUniqueIDAndInitializeMon(m); } catch { }
             try { level = Mathf.Max(1, m.curLevel); } catch { }
 
             int monId = -1;
@@ -6642,6 +6657,8 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
                 Escape(GetEncounterVersionRequirementLabel(gs, m)));
 
             Dbg("Generated official server-owned shared-version overworld spawn req=" + requestId + " zone=" + zoneId + " zoneType=" + zoneType + " rarity=" + rarity + " mon=" + monKey + " id=" + monId + " shiny=" + shiny + " level=" + level + " versionRequirement=" + GetEncounterVersionRequirementLabel(gs, m) + " pos=(" + F(x) + "," + F(y) + "," + F(z) + ")");
+            }
+            finally { gs.curEncounterPool = previousPool; }
         }
         catch (Exception ex)
         {
@@ -6658,6 +6675,12 @@ public sealed class MMOnsterpatchRunner : MonoBehaviour
                 return null;
 
             string r = (rarity ?? "").Trim().ToLowerInvariant();
+            if (r == "veryrare")
+            {
+                Mon veryRare = ChooseSharedEncounterFromList(pool.veryRareMons, waterMonOnly);
+                if (veryRare != null) return veryRare;
+                r = "rare";
+            }
             if (r == "rare")
             {
                 Mon rare = ChooseSharedEncounterFromList(pool.rareMons, waterMonOnly);
